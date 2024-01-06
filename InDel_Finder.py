@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 
 import numpy as np
-import Bio.pairwise2 as pairwise2
+from Bio.Align import PairwiseAligner
 from Bio import SeqIO
 from InDel_Counter import PAM_MAX, ERR_MAX, MATCH_LETTER, get_result_text_set
 from InDel_Counter import RESULT_LOG_ADDRESS, ALIGN_LOG_ADDRESS, DATA_ADDRESS, GUIDE_RNA_ADDRESS, \
@@ -14,6 +14,9 @@ from InDel_Counter import write_result_main_log, write_result_sub_log, write_res
 ALIGN_ERR_MAX = 0.1
 MAT = 2
 MIS = -1
+GAP_OPEN = -50
+GAP_EXTEND = -4
+
 ALIGN_MIN = 50
 PHRED_MEANINGFUL_MIN = 30
 MULTIPROCESSING_MAX = 1
@@ -36,7 +39,14 @@ def get_file_txt_name(file_name: str):
 def get_align_line_set(ref_str: str, seq_str: str):
     ref_str = "X" + ref_str + "X"
 
-    alignments = pairwise2.align.globalds(ref_str, seq_str, ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION, -50, -4)
+    aligner = PairwiseAligner()
+    aligner.substitution_matrix = ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION
+
+    aligner.open_gap_score = GAP_OPEN
+    aligner.extend_gap_score = GAP_EXTEND
+
+    alignments = aligner.align(ref_str, seq_str)
+
     ref_line_untrimmed = alignments[0][0]
     seq_line_untrimmed = alignments[0][1]
 
@@ -169,7 +179,7 @@ def get_best_align_line_set_list_dict(ref_raw_list: list, seq_raw_list: list, g_
 
 
 def write_log_starter(file_log):
-
+    pass
 
 
 def write_gene_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel_count_for_file_dict: dict):
@@ -431,7 +441,8 @@ if __name__ == '__main__':
 
     # Get the addresses of testing files, reference sequences, and the guide RNA sequence.
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
-                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name))]
+                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)
+                                      and Path(file_name).suffix.lower() == 'fastq')]
     ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
 
     ref_raw_list = []
@@ -470,7 +481,7 @@ if __name__ == '__main__':
         write_gene_seq_log_for_file(file_name, line_set_list_dict, indel_count_for_file_dict)
         write_error_seq_log_for_file(file_name, line_set_list_dict, indel_count_for_file_dict)
 
-    write_result_main_log(indel_count_total)
+    # write_result_main_log(indel_count_total)
 
 
         # TODO

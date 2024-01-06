@@ -5,7 +5,6 @@ import os
 
 import numpy as np
 import pandas as pd
-from Bio import pairwise2
 
 
 DIV_LETTER = ('@',)
