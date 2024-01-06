@@ -33,6 +33,46 @@ ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
 }
 
 
+def get_result_text_set(sorted_result: list, f_no: int = 1):
+    res_text = "hetero(+/-)"
+    err_list = []
+    n = n1 = n2 = ne = 0
+    s1 = s2 = 0
+    p1 = p2 = pe = -1
+    if len(sorted_result) < 1:
+        err_list.append("WARNING: no result")
+        return res_text, err_list, s1, s2
+
+    for i, res in enumerate(sorted_result):
+        n += res[1]
+        if n1 == 0:
+            s1, n1 = res[0], res[1]
+            p1 = i
+        elif n2 == 0:
+            s2, n2 = res[0], res[1]
+            p2 = i
+
+    if ne > n * 0.1:
+        err_list.append("error rate is higher than 10%")
+    if f_no == 0:
+        return res_text, err_list, s1, s2
+
+    if n1 + n2 < ((n - ne) * 0.9):
+        err_list.append("two largest genotypes are less than 90%(without error)")
+
+    if n2 > n1 * 0.5:
+        if "WT" in (s1, s2):
+            res_text = "hetero(+/-)"
+        else:
+            res_text = "hetero(1/2)"
+    else:
+        if "WT" in (s1,):
+            res_text = "homo(-/-)"
+        else:
+            res_text = "homo(+/+)"
+    return res_text, err_list, s1, s2
+
+
 def get_file_txt_name(file_name: str):
     return Path(file_name).stem + ".txt"
 
@@ -214,13 +254,16 @@ def write_gene_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel_
         file_log.write("\n[Result]\n")
         for item in indel_count_list:
             file_log.write(f"{item[0]}\t{item[1]}\n")
+        print(indel_count_list)
+        if len(indel_count_list) == 0:
+            continue
         if res_text[:2] == "ho":
             file_log.write(f"\n{res_text} of "
-                           f"{indel_count_list[s1][0]} ({indel_count_list[s1][1]} of {len(line_set_list_dict[key])})\n")
+                           f"{indel_count_list[0][0]} ({indel_count_list[0][1]} of {len(line_set_list_dict[key])})\n")
         else:
             file_log.write(f"\n{res_text} of "
-                           f"{indel_count_list[s1][0]} ({indel_count_list[s1][1]} of {len(line_set_list_dict[key])}) and "
-                           f"{indel_count_list[s2][0]} ({indel_count_list[s2][1]} of {len(line_set_list_dict[key])})\n")
+                           f"{indel_count_list[0][0]} ({indel_count_list[0][1]} of {len(line_set_list_dict[key])}) and "
+                           f"{indel_count_list[1][0]} ({indel_count_list[1][1]} of {len(line_set_list_dict[key])})\n")
         file_log.write("\n\n@\n")
 
     for key in line_set_list_dict.keys():
@@ -270,13 +313,15 @@ def write_error_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel
         file_log.write("\n[Result]\n")
         for item in indel_count_list:
             file_log.write(f"{item[0]}\t{item[1]}\n")
+        if len(indel_count_list) == 0:
+            continue
         if res_text[:2] == "ho":
             file_log.write(f"\n{res_text} of "
-                                 f"{indel_count_list[s1][0]} ({indel_count_list[s1][1]} of {len(line_set_list_dict[key])})\n")
+                                 f"{indel_count_list[0][0]} ({indel_count_list[0][1]} of {len(line_set_list_dict[key])})\n")
         else:
             file_log.write(f"\n{res_text} of "
-                                 f"{indel_count_list[s1][0]} ({indel_count_list[s1][1]} of {len(line_set_list_dict[key])}) and "
-                                 f"{indel_count_list[s2][0]} ({indel_count_list[s2][1]} of {len(line_set_list_dict[key])})\n")
+                                 f"{indel_count_list[1][0]} ({indel_count_list[1][1]} of {len(line_set_list_dict[key])}) and "
+                                 f"{indel_count_list[1][0]} ({indel_count_list[1][1]} of {len(line_set_list_dict[key])})\n")
         file_log.write("\n\n@\n")
 
     # sort by the length: to put the same sequences in the similar spot

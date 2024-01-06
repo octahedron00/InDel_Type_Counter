@@ -100,6 +100,7 @@ def get_result_text_set(sorted_result: list, f_no: int = 1):
     err_list = []
     n = n1 = n2 = ne = 0
     s1 = s2 = 0
+    p1 = p2 = pe = -1
     if len(sorted_result) < 1:
         err_list.append("WARNING: no result")
         return res_text, err_list, s1, s2
@@ -107,11 +108,14 @@ def get_result_text_set(sorted_result: list, f_no: int = 1):
     for i, res in enumerate(sorted_result):
         n += res[1]
         if n1 == 0 and res[0] != "err":
-            s1, n1 = i, res[1]
+            s1, n1 = res[0], res[1]
+            p1 = i
         elif n2 == 0 and res[0] != "err":
-            s2, n2 = i, res[1]
+            s2, n2 = res[0], res[1]
+            p2 = i
         elif res[0] == 'err':
             ne = res[1]
+            pe = i
 
     if ne > n * 0.1:
         err_list.append("error rate is higher than 10%")
