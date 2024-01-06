@@ -1,0 +1,9 @@
+<InDel_Counter Main Log>
+Log at 2024-01-03 10:40:45.442868 (UTC 9:00:00)
+PAM_MAX,5,ERR_MAX,0.03
+Guide RNA sequence,TAACTATCCGCAACACAGCT
+
+file,T filial No,error,genotype,_of,# total,# of genotype
+49.txt,1,,homo(+/+),1I-4 / 1I-4,606,1I-4 560,WT 7,err 39
+86.txt,1,# error rate is higher than 10%,homo(-/-),WT / WT,610,WT 499,3D-3 16,1I-4 16,2D-1 13,err 66
+94.txt,1,# error rate is higher than 10%,homo(+/+),err / err,1,err 1

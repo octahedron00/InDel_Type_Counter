@@ -1,0 +1,68 @@
+# <InDel_Counter Side Log for 10_S10_L001_R1_001.fastq>
+# Log at 2024-01-05 17:18:18.223150 (UTC 9:00:00)
+# PAM_MAX = 5, ERR_MAX = 0.05
+
+# Guide RNA sequence : TAACTATCCGCAACACAGCT
+
+
+# 10_S10_L001_R1_001.fastq as a data for Transgenic filial 1
+
+
+For err:
+# WARNING : error rate is higher than 10%
+
+[Result]
+err	250
+
+homo(+/+) of err (250 of 250)
+
+
+@
+
+
+For PME30(_Vp11G28940)_Replicone~400:
+# WARNING : two largest genotypes are less than 90%(without error)
+
+[Result]
+1I-3	2515
+WT	1865
+9D1	251
+35D29	68
+3D-2	34
+1D-3	25
+17D12	22
+26D1	18
+1I2D-2	15
+18D9	14
+8D-3	14
+1I1D-3	12
+42D33	9
+2I1D-2	8
+29D18	8
+3D-3	7
+1D-2	7
+1I1D1	6
+4I-4	5
+10D6	5
+3D-4	4
+10D3	4
+7D3	4
+1I1D2	3
+1I4D-3	2
+1I1D5	2
+1I1D3	2
+1I1D-1	2
+34D16	1
+1I1D4	1
+7D-1	1
+
+hetero(1/2) of 1I-3 (2515 of 4934) and WT (1865 of 4934)
+
+
+@
+
+
+For PME31(_Vp10G07510)_Replicone~400:
+# WARNING : WARNING: no result
+
+[Result]

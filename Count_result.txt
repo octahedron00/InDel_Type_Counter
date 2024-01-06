@@ -1,0 +1,8 @@
+# <InDel_Counter Main Log>
+# Log at 2024-01-03 14:38:29.560563 (UTC 9:00:00)
+# PAM_MAX = 5, ERR_MAX = 0.03
+
+# Guide RNA sequence : TAACTATCCGCAACACAGCT
+
+
+# 49.txt as a data for Transgenic filial 1
