@@ -1,5 +1,5 @@
 # <InDel_Counter Side Log for 10_S10_L001_R1_001.fastq>
-# Log at 2024-01-05 17:18:18.223150 (UTC 9:00:00)
+# Log at 2024-01-07 02:31:21.492843 (UTC 9:00:00)
 # PAM_MAX = 5, ERR_MAX = 0.05
 
 # Guide RNA sequence : TAACTATCCGCAACACAGCT
@@ -24,7 +24,7 @@ For PME30(_Vp11G28940)_Replicone~400:
 # WARNING : two largest genotypes are less than 90%(without error)
 
 [Result]
-1I-3	2515
+1I-4	2521
 WT	1865
 9D1	251
 35D29	68
@@ -37,7 +37,6 @@ WT	1865
 8D-3	14
 1I1D-3	12
 42D33	9
-2I1D-2	8
 29D18	8
 3D-3	7
 1D-2	7
@@ -49,6 +48,7 @@ WT	1865
 7D3	4
 1I1D2	3
 1I4D-3	2
+1I-3	2
 1I1D5	2
 1I1D3	2
 1I1D-1	2
@@ -56,7 +56,7 @@ WT	1865
 1I1D4	1
 7D-1	1
 
-hetero(1/2) of 1I-3 (2515 of 4934) and WT (1865 of 4934)
+hetero(1/2) of 1I-4 (2521 of 4934) and WT (1865 of 4934)
 
 
 @

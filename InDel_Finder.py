@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 
 import numpy as np
-from Bio.Align import PairwiseAligner
+from Bio.Align import PairwiseAligner, substitution_matrices
 from Bio import SeqIO
 from InDel_Counter import PAM_MAX, ERR_MAX, MATCH_LETTER, get_result_text_set
 from InDel_Counter import RESULT_LOG_ADDRESS, ALIGN_LOG_ADDRESS, DATA_ADDRESS, GUIDE_RNA_ADDRESS, \
@@ -11,9 +11,8 @@ from InDel_Counter import RESULT_LOG_ADDRESS, ALIGN_LOG_ADDRESS, DATA_ADDRESS, G
 from InDel_Counter import read_g_rna, get_indel_count_result_list, find_final_position, get_indel_shape_text
 from InDel_Counter import write_result_main_log, write_result_sub_log, write_result_csv
 
-ALIGN_ERR_MAX = 0.1
-MAT = 2
-MIS = -1
+MATCH = MAT = 2
+MISMATCH = MIS = -1
 GAP_OPEN = -50
 GAP_EXTEND = -4
 
@@ -21,6 +20,8 @@ ALIGN_MIN = 50
 PHRED_MEANINGFUL_MIN = 30
 MULTIPROCESSING_MAX = 1
 FILIAL_NO = 1
+
+ERR_PADDING = 1
 
 # 'X' = for both end of main sequence, meaning the subsequence must be between this
 ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
@@ -40,7 +41,10 @@ def get_align_line_set(ref_str: str, seq_str: str):
     ref_str = "X" + ref_str + "X"
 
     aligner = PairwiseAligner()
-    aligner.substitution_matrix = ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION
+
+    matrix = substitution_matrices.Array(data=ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION)
+
+    aligner.substitution_matrix = matrix
 
     aligner.open_gap_score = GAP_OPEN
     aligner.extend_gap_score = GAP_EXTEND
@@ -81,7 +85,7 @@ def get_align_score(indel_length: int, ref_line: str, match_line: str, seq_line:
     for c in match_line[1:-2]:
         if c == '|':
             a += 1
-    score = a / (len(match_line[1:-2])-indel_length)
+    score = a / (len(match_line[ERR_PADDING:-ERR_PADDING])-indel_length)
     return score
 
 
@@ -441,8 +445,8 @@ if __name__ == '__main__':
 
     # Get the addresses of testing files, reference sequences, and the guide RNA sequence.
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
-                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)
-                                      and Path(file_name).suffix.lower() == 'fastq')]
+                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
+    print(address_list)
     ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
 
     ref_raw_list = []
@@ -471,6 +475,8 @@ if __name__ == '__main__':
 
         print(f"for {file_name}:")
         line_set_list_dict = get_best_align_line_set_list_dict(ref_raw_list, seq_raw_list, g_rna_seq_list)
+
+        print(line_set_list_dict)
 
         # line_set = {name, (pos, ref, match, seq, phred)_line, indel_type, align_score, reason}
 
