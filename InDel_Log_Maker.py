@@ -59,13 +59,15 @@ def write_gene_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel_
         # sort by the length: to put the same sequences in the similar spot
         line_set_list = sorted(line_set_list_dict[key], key=lambda x: len(x['match_line']))
         for line_set in line_set_list:
-            file_log.write(f"@\t{key}\t{line_set['name']}\n")
-            file_log.write(f"@\t{line_set['indel_type']}\t{line_set['align_score']}\t{line_set['reason']}\n")
-            file_log.write(f"{line_set['pos_line']}\n")
-            file_log.write(f"{line_set['ref_line']}\n")
-            file_log.write(f"{line_set['match_line']}\n")
-            file_log.write(f"{line_set['seq_line']}\n")
-            file_log.write(f"{line_set['phred_line']}\n\n\n")
+            file_log.write(f"@\t{key}\t{line_set['name']}\n"
+                           f"@\t{line_set['indel_type']}\t{line_set['align_score']}\t{line_set['reason']}\n"
+                           f"position: {line_set['pos_line']}\n"
+                           f"ref_line: {line_set['ref_line']}\n"
+                           f"match   : {line_set['match_line']}\n"
+                           f"readline: {line_set['seq_line']}\n"
+                           f"phred   : {line_set['phred_line']}\n"
+                           f"\n"
+                           f"\n")
     file_log.close()
 
 
@@ -75,18 +77,19 @@ def write_error_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel
     # print(line_set_list_dict['err'])
     # print(sorted(line_set_list_dict['err'], key=lambda x: len(x['match_line'])))
 
-    file_log.write(f"# <InDel_Counter Side Error Log for {file_name}>\n")
-    file_log.write(
-        f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n")
-    file_log.write(f"# PAM_MAX = {PAM_MAX}, ERR_MAX = {ERR_MAX}\n\n")
-    file_log.write(f"# Guide RNA sequence : {g_rna_seq}\n\n\n")
-
-    file_log.write(f"# {file_name} as a data for Transgenic filial {FILIAL_NO}\n")
+    file_log.write(f"# <InDel_Counter Side Error Log for {file_name}>\n"
+                   f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
+                   f"# PAM_MAX = {PAM_MAX}, ERR_MAX = {ERR_MAX}\n\n"
+                   f"# Guide RNA sequence : {g_rna_seq}\n"
+                   f"# \n"
+                   f"# \n"
+                   f"# {file_name} as a data for Transgenic filial {FILIAL_NO}\n"
+                   f"\n"
+                   f"\n")
 
     #
     for key in indel_count_for_file_dict.keys():
 
-        file_log.write("\n\n")
         file_log.write(f"For {key}:\n")
 
         indel_count_list = indel_count_for_file_dict[key]
@@ -119,13 +122,15 @@ def write_error_seq_log_for_file(file_name: str, line_set_list_dict: dict, indel
 
     line_set_list = sorted(line_set_list_dict[key], key=lambda x: len(x['match_line']))
     for line_set in line_set_list:
-        file_log.write(f"@\t{key}\t{line_set['name']}\n")
-        file_log.write(f"@\t{line_set['indel_type']}\t{line_set['align_score']}\t{line_set['reason']}\n")
-        file_log.write(f"{line_set['pos_line']}\n")
-        file_log.write(f"{line_set['ref_line']}\n")
-        file_log.write(f"{line_set['match_line']}\n")
-        file_log.write(f"{line_set['seq_line']}\n")
-        file_log.write(f"{line_set['phred_line']}\n\n\n")
+        file_log.write(f"@\t{key}\t{line_set['name']}\n"
+                       f"@\t{line_set['indel_type']}\t{line_set['align_score']}\t{line_set['reason']}\n"
+                       f"position: {line_set['pos_line']}\n"
+                       f"ref_line: {line_set['ref_line']}\n"
+                       f"match   : {line_set['match_line']}\n"
+                       f"readline: {line_set['seq_line']}\n"
+                       f"phred   : {line_set['phred_line']}\n"
+                       f"\n"
+                       f"\n")
     file_log.close()
 
 

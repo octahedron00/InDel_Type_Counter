@@ -1,5 +1,8 @@
 
 
+
+
+
 <variables / functions naming rule>
 text_ = english message
 line_ = sequence or string to perform with
