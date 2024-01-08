@@ -19,6 +19,9 @@ ERR_MAX = 0.05
 FILIAL_NO = 1
 
 ERR_PADDING = 1
+HOMO_RATIO_MIN = 0.9
+HETERO_RATIO_SUM_MIN = 0.8
+ERR_RATIO_MAX = 0.1
 
 # 'X' = for both end of main sequence, meaning the subsequence must be between this
 ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
@@ -111,12 +114,12 @@ class Line_Set:
 
     def __str__(self):
         return f"@\tref: {self.ref_name}\t/read: {self.read_name}\t/file: {self.file_name}\n" \
-                f"@\tindel: {self.indel_type}\t/score: {self.int_score}\t/reason: {self.indel_reason}\n" \
-                f"position: {self.pos_line}\n" \
-                f"ref_line: {self.ref_line}\n" \
-                f"match   : {self.match_line}\n" \
-                f"readline: {self.read_line}\n" \
-                f"phred   : {self.phred_line}\n"
+               f"@\tindel: {self.indel_type}\t/score: {self.int_score}\t/reason: {self.indel_reason}\n" \
+               f"position: {self.pos_line}\n" \
+               f"ref_line: {self.ref_line}\n" \
+               f"match   : {self.match_line}\n" \
+               f"readline: {self.read_line}\n" \
+               f"phred   : {self.phred_line}\n"
 
     def set_file_name(self, file_name: str):
         self.file_name = file_name
@@ -203,7 +206,7 @@ class Line_Set:
             self.cut_pos = -1000
             return
 
-        ref_line_buffer = self.ref_line + "X" * (PAM_MAX*2)
+        ref_line_buffer = self.ref_line + "X" * (PAM_MAX * 2)
 
         pos_line = " " * pri
         for i in range(pri, pre):
@@ -298,11 +301,11 @@ class Line_Set:
         for c in self.match_line[ERR_PADDING:-ERR_PADDING]:
             if c == '|':
                 a += 1
-        score = a / (len(self) - 2*ERR_PADDING - self.indel_length)
+        score = a / (len(self) - 2 * ERR_PADDING - self.indel_length)
 
         self.score = score
 
-        if score < (1-ERR_MAX):
+        if score < (1 - ERR_MAX):
             self.indel_type = 'err'
             self.indel_reason = 'Too many mismatch and error'
         self.int_score = int((score - 1) * 1000)
@@ -321,24 +324,35 @@ class InDel_Counter_for_Ref:
         self.count_map = dict({'err': 0})
 
     def __str__(self):
+        genotype = self.get_genotype()
         str = f"for {self.ref_name} in {self.file_name}: \n" \
               f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
               f"\n" \
               f"[Result] \n" \
-              f"total {len(self)} \n"
+              f"{genotype}\n" \
+              f"\n" \
+              f"total {len(self)} (without err: {self.get_len(with_err=False)}) \n"
         sorted_count_tuple_list = self._get_sorted_count_map_list()
         for count_tuple in sorted_count_tuple_list:
             key, value = count_tuple[0], count_tuple[1]
             if key == 'err':
                 continue
-            str += f"{key}: \t{value} ({round(int(value)/len(self), 3)})\n"
-        str += f"err: \t{self.count_map['err']}\n"
+            str += f"{key}: \t{value} ({round(int(value) / self.get_len(with_err=False), 3)} without err)\n"
+        str += f"err: \t{self.count_map['err']} ({round(self.count_map['err'] / self.get_len(with_err=True), 3)})\n"
         return str
 
-    def __len__(self):
+    def __len__(self, with_err: bool = True):
         length = 0
         for key in self.count_map.keys():
-            length += self.count_map[key]
+            if with_err or key != 'err':
+                length += self.count_map[key]
+        return length
+
+    def get_len(self, with_err: bool = True):
+        length = 0
+        for key in self.count_map.keys():
+            if with_err or key != 'err':
+                length += self.count_map[key]
         return length
 
     def set_file_name(self, file_name: str):
@@ -356,7 +370,87 @@ class InDel_Counter_for_Ref:
         return sorted_count_tuple_list
 
     def get_genotype(self):
+        sorted_count_tuple_list = self._get_sorted_count_map_list()
+        return Genotype(indel_counter=self, sorted_count_tuple_list=sorted_count_tuple_list)
 
 
-        pass
+class Genotype:
+    name = ""
+    warning = ""
+    allele1_name = ""
+    allele2_name = ""
+    allele1_ratio = 0
+    allele2_ratio = 0
+    allele_set_text = ""
+    allele_set_shape = ""
 
+    def __init__(self, indel_counter: InDel_Counter_for_Ref, sorted_count_tuple_list: list):
+        if len(sorted_count_tuple_list) < 2:
+            self.name = "err"
+            self.warning = "error only"
+            self.allele1_name = self.allele2_name = 'err'
+            self.allele_set_text = "err/err"
+            self.allele_set_shape = "err"
+
+        elif len(sorted_count_tuple_list) < 3:
+            self.name = "homo"
+            for key, value in sorted_count_tuple_list:
+                if key != 'err':
+                    self.allele1_name = key
+                    self.allele1_ratio = 1
+                    self.allele_set_text = key + "/" + key
+        else:
+            for key, value in sorted_count_tuple_list:
+                if key != 'err':
+                    if 0 < self.allele1_ratio:
+                        self.allele2_name = key
+                        self.allele2_ratio = round(value / indel_counter.get_len(with_err=False), 3)
+                        break
+                    else:
+                        self.allele1_name = key
+                        self.allele1_ratio = round(value / indel_counter.get_len(with_err=False), 3)
+            if self.allele1_ratio > HOMO_RATIO_MIN:
+                self.name = "homo"
+                if self.allele1_name == "WT":
+                    self.allele_set_shape = "+/+"
+                    self.allele_set_text = "WT/WT"
+                else:
+                    self.allele_set_shape = "-/-"
+                    self.allele_set_text = self.allele1_name + "/" + self.allele1_name
+
+            elif self.allele1_ratio + self.allele2_ratio > HETERO_RATIO_SUM_MIN:
+                self.name = "hetero"
+                self.allele_set_text = self.allele1_name + "/" + self.allele2_name
+                if "WT" in (self.allele1_name, self.allele2_name):
+                    self.allele_set_shape = "-/+"
+                else:
+                    self.allele_set_shape = "1/2"
+            else:
+                self.name = "ambiguous"
+                self.warning = "No genotype set is dominant enough"
+                self.allele_set_text = self.allele1_name + "/" + self.allele2_name
+                self.allele_set_shape = "err"
+            if (indel_counter.count_map['err'] / len(indel_counter)) > ERR_RATIO_MAX:
+                if len(self.warning) > 0:
+                    self.warning += '\n'
+                    self.warning += "error ratio is high"
+                else:
+                    self.warning = "error ratio is high"
+
+    def __str__(self):
+        if self.name in ('hetero', 'ambiguous'):
+            string = f"{self.name}({self.allele_set_shape}) of " \
+                     f"{self.allele1_name}({self.allele1_ratio} without err) and " \
+                     f"{self.allele2_name}({self.allele2_ratio} without err) " \
+                     f"(sum: {self.allele1_ratio+self.allele2_ratio})"
+            if len(self.warning) > 0:
+                string += "\n"
+                string += self.warning
+            return string
+        else:
+            string = f"{self.name}({self.allele_set_shape}) of " \
+                     f"{self.allele1_name}({self.allele1_ratio} without err)"
+            if len(self.warning) > 0:
+                string += "\n"
+                string += self.warning
+            return string
