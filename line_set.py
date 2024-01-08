@@ -78,10 +78,10 @@ class Line_Set:
 
     guide_rna_seq = ""
 
-    name = ""
     read_name = ""
     ref_name = ""
     guide_rna_name = ""
+    file_name = "(file_name not defined)"
 
     indel_type = ""
     indel_length = 0
@@ -110,13 +110,16 @@ class Line_Set:
         return len(self.ref_line)
 
     def __str__(self):
-        return f"@\t{self.ref_name}\t{self.read_name}\n" \
-                f"@\t{self.indel_type}\t{self.int_score}\t{self.indel_reason}\n" \
+        return f"@\tref: {self.ref_name}\t/read: {self.read_name}\t/file: {self.file_name}\n" \
+                f"@\tindel: {self.indel_type}\t/score: {self.int_score}\t/reason: {self.indel_reason}\n" \
                 f"position: {self.pos_line}\n" \
                 f"ref_line: {self.ref_line}\n" \
                 f"match   : {self.match_line}\n" \
                 f"readline: {self.read_line}\n" \
                 f"phred   : {self.phred_line}\n"
+
+    def set_file_name(self, file_name: str):
+        self.file_name = file_name
 
     def _set_align_line_set(self, ref_seq, read_seq):
         ref_seq = "X" + ref_seq + "X"
@@ -305,5 +308,55 @@ class Line_Set:
         self.int_score = int((score - 1) * 1000)
 
 
+class InDel_Counter_for_Ref:
+    file_name = "(file_name not defined)"
+    ref_name = ""
+    guide_rna_name = ""
+    guide_rna_seq = ""
 
+    def __init__(self, ref_set: Reference_Set):
+        self.ref_name = ref_set.ref_name
+        self.guide_rna_name = ref_set.guide_rna_name
+        self.guide_rna_seq = ref_set.guide_rna_seq
+        self.count_map = dict({'err': 0})
+
+    def __str__(self):
+        str = f"for {self.ref_name} in {self.file_name}: \n" \
+              f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
+              f"\n" \
+              f"[Result] \n" \
+              f"total {len(self)} \n"
+        sorted_count_tuple_list = self._get_sorted_count_map_list()
+        for count_tuple in sorted_count_tuple_list:
+            key, value = count_tuple[0], count_tuple[1]
+            if key == 'err':
+                continue
+            str += f"{key}: \t{value} ({round(int(value)/len(self), 3)})\n"
+        str += f"err: \t{self.count_map['err']}\n"
+        return str
+
+    def __len__(self):
+        length = 0
+        for key in self.count_map.keys():
+            length += self.count_map[key]
+        return length
+
+    def set_file_name(self, file_name: str):
+        self.file_name = file_name
+
+    def append(self, line_set: Line_Set):
+        if line_set.ref_name == self.ref_name:
+            if line_set.indel_type in self.count_map.keys():
+                self.count_map[line_set.indel_type] += 1
+            else:
+                self.count_map[line_set.indel_type] = 1
+
+    def _get_sorted_count_map_list(self):
+        sorted_count_tuple_list = list(sorted(self.count_map.items(), key=lambda k: k[1], reverse=True))
+        return sorted_count_tuple_list
+
+    def get_genotype(self):
+
+
+        pass
 
