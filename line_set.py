@@ -338,7 +338,8 @@ class InDel_Counter_for_Ref:
             if key == 'err':
                 continue
             str += f"{key}: \t{value} ({round(int(value) / self.get_len(with_err=False), 3)} without err)\n"
-        str += f"err: \t{self.count_map['err']} ({round(self.count_map['err'] / self.get_len(with_err=True), 3)})\n"
+        if len(self) > 0:
+            str += f"err: \t{self.count_map['err']} ({round(self.count_map['err'] / self.get_len(with_err=True), 3)})\n"
         return str
 
     def __len__(self, with_err: bool = True):
@@ -358,7 +359,7 @@ class InDel_Counter_for_Ref:
     def set_file_name(self, file_name: str):
         self.file_name = file_name
 
-    def append(self, line_set: Line_Set):
+    def count(self, line_set: Line_Set):
         if line_set.ref_name == self.ref_name:
             if line_set.indel_type in self.count_map.keys():
                 self.count_map[line_set.indel_type] += 1
@@ -442,7 +443,7 @@ class Genotype:
             string = f"{self.name}({self.allele_set_shape}) of " \
                      f"{self.allele1_name}({self.allele1_ratio} without err) and " \
                      f"{self.allele2_name}({self.allele2_ratio} without err) " \
-                     f"(sum: {self.allele1_ratio+self.allele2_ratio})"
+                     f"(sum: {round(self.allele1_ratio+self.allele2_ratio, 3)})"
             if len(self.warning) > 0:
                 string += "\n"
                 string += self.warning
