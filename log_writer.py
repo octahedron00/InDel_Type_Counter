@@ -14,7 +14,7 @@ SUB_LOG_ADDRESS = "./log/"
 RESULT_LOG_ADDRESS = "./log/"
 
 MAIN_LOG_NAME = "./Count_result.txt"
-CSV_LOG_NAME = "./temporal.csv"
+CSV_LOG_NAME = "./Count_result.csv"
 XLSX_LOG_NAME = "./Count_result.xlsx"
 
 FILIAL_NO = 1
