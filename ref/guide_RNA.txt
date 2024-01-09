@@ -1,5 +1,0 @@
-# File for Guide RNA sequence
-# The first line without '#' will be read as a JSON text.
-# used_key = name', 'seq'
-
-{"name" : "PME30_31", "seq" : "TAACTATCCGCAACACAGCT"}

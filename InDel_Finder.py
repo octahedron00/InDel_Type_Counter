@@ -11,7 +11,7 @@ from InDel_Counter import RESULT_LOG_ADDRESS, ALIGN_LOG_ADDRESS, DATA_ADDRESS, G
 from InDel_Counter import read_g_rna, get_indel_count_result_list, find_final_position, get_indel_shape_text
 from InDel_Counter import write_result_sub_log, write_result_csv
 
-from InDel_Log_Maker import write_gene_seq_log_for_file, write_error_seq_log_for_file
+from log_writer import write_gene_seq_log_for_file, write_error_seq_log_for_file
 
 MATCH = MAT = 2
 MISMATCH = MIS = -1

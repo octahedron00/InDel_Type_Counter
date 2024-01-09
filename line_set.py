@@ -6,8 +6,6 @@ MISMATCH = MIS = -1
 GAP_OPEN = -50
 GAP_EXTEND = -4
 
-ALIGN_MIN = 50
-
 PHRED_MEANINGFUL_MIN = 30
 
 MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
@@ -15,8 +13,6 @@ MATCH_ERR_LETTER = MATCH_LETTER[1:]
 
 PAM_MAX = 5
 ERR_MAX = 0.05
-
-FILIAL_NO = 1
 
 ERR_PADDING = 1
 HOMO_RATIO_MIN = 0.9
@@ -332,7 +328,7 @@ class InDel_Counter_for_Ref:
               f"{genotype}\n" \
               f"\n" \
               f"total {len(self)} (without err: {self.get_len(with_err=False)}) \n"
-        sorted_count_tuple_list = self._get_sorted_count_map_list()
+        sorted_count_tuple_list = self.get_sorted_count_map_list()
         for count_tuple in sorted_count_tuple_list:
             key, value = count_tuple[0], count_tuple[1]
             if key == 'err':
@@ -366,12 +362,13 @@ class InDel_Counter_for_Ref:
             else:
                 self.count_map[line_set.indel_type] = 1
 
-    def _get_sorted_count_map_list(self):
+    def get_sorted_count_map_list(self):
         sorted_count_tuple_list = list(sorted(self.count_map.items(), key=lambda k: k[1], reverse=True))
         return sorted_count_tuple_list
 
     def get_genotype(self):
-        sorted_count_tuple_list = self._get_sorted_count_map_list()
+        sorted_count_tuple_list = self.\
+            get_sorted_count_map_list()
         return Genotype(indel_counter=self, sorted_count_tuple_list=sorted_count_tuple_list)
 
 

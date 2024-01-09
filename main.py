@@ -1,14 +1,13 @@
 import datetime
 import os
-import pathlib
+import re
 
 from Bio import SeqIO
 
 from line_set import Line_Set, Reference_Set, InDel_Counter_for_Ref
+from log_writer import write_main_log, write_sub_log, write_main_csv_log
 
 DATA_ADDRESS = "./data/"
-SUB_LOG_ADDRESS = "./log/"
-RESULT_LOG_ADDRESS = "./log/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
@@ -32,59 +31,16 @@ def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
     return best_line_set
 
 
-def write_sub_log(line_set_list: list, indel_counter: InDel_Counter_for_Ref, file_name: str):
-    file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
-
-    file_log.write(f""
-                   f"# <InDel_Counter Side Log for {file_name}>\n"
-                   f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
-                   f"# \n"
-                   f"# {file_name} as a data for Transgenic filial {FILIAL_NO}\n"
-                   f"\n"
-                   f"\n")
-
-    file_log.write(str(indel_counter))
-    file_log.write("\n\n\n")
-
-    for line_set in line_set_list:
-        if line_set.ref_name == indel_counter.ref_name:
-            file_log.write(str(line_set))
-            file_log.write("\n\n")
-
-    file_log.close()
-
-
-def write_main_log(indel_counter_list_list: list):
-
-    file_log = open("Count_result.txt", "w")
-
-    file_log.write(f""
-                   f"# <InDel_Counter Main Log>\n"
-                   f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
-                   f"# \n"
-                   f"# {file_name} as a data for Transgenic filial {FILIAL_NO}\n"
-                   f"\n"
-                   f"\n")
-
-    for indel_counter_list in indel_counter_list_list:
-        file_log.write(f"\n"
-                       f"\n"
-                       f"<{indel_counter_list[0].file_name}>\n"
-                       f"\n")
-        for indel_counter in indel_counter_list:
-            file_log.write(str(indel_counter))
-            file_log.write("\n"
-                           "\n")
-
-    file_log.close()
-
-
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
     # print(address_list)
+
+    address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
+    print(address_list)
+
     ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
 
     ref_raw_list = []
@@ -168,6 +124,7 @@ if __name__ == '__main__':
               f"{end_time_for_file - start_time_for_file} is used (length: {len(line_set_list)})")
 
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
+    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
     log.close()
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
 
