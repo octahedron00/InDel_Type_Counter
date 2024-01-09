@@ -102,11 +102,14 @@ if __name__ == '__main__':
             now_time = datetime.datetime.now()
             delta_time = now_time - start_time
 
-            print(f"\r({file_no + 1}/{len(address_list)}) "
-                  f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
-                  f"remaining: {(delta_time/finished_length)*(total_length-finished_length)} "
-                  f"(for this file: {(delta_time/finished_length)*(len(read_raw_list)-(i+1))}) "
-                  f"(length: {len(read_raw_list)})", end="")
+            # to prevent print function's time delay problem:
+            # This will show the update at about every 0.3 seconds
+            if (i % 100) == 0:
+                print(f"\r({file_no + 1}/{len(address_list)}) "
+                      f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
+                      f"remaining: {(delta_time/finished_length)*(total_length-finished_length)} "
+                      f"(for this file: {(delta_time/finished_length)*(len(read_raw_list)-(i+1))}) "
+                      f"(length: {len(read_raw_list)})", end="")
 
             best_line_set = get_best_line_set(read_raw, ref_set_list)
             best_line_set.set_file_name(file_name=file_name)

@@ -19,6 +19,7 @@ HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
+READ_MIN = 30
 
 # 'X' = for both end of main sequence, meaning the subsequence must be between this
 ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
@@ -441,6 +442,13 @@ class Genotype:
                 self.warning = "No genotype set is dominant enough"
                 self.allele_set_text = self.allele1_name + "/" + self.allele2_name
                 self.allele_set_shape = "err"
+
+            if len(indel_counter) < READ_MIN:
+                if len(self.warning) > 0:
+                    self.warning += '\n'
+                    self.warning += "Reads not enough"
+                else:
+                    self.warning = "Reads not enough"
 
             if not is_third_ratio_good:
                 if len(self.warning) > 0:
