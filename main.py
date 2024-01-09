@@ -68,10 +68,14 @@ if __name__ == '__main__':
     total_length = 0
     for i, file_name in enumerate(address_list):
         read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+
         print(f"\r({i+1}/{len(address_list)}) reading {file_name}", end="")
+
         for item in read_raw_iter:
             total_length += 1
+
     print(f"\rTotal reads :{total_length} for {len(address_list)} files")
+
     finished_length = 0
 
     print()
@@ -101,14 +105,17 @@ if __name__ == '__main__':
             print(f"\r({file_no + 1}/{len(address_list)}) "
                   f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
                   f"remaining: {(delta_time/finished_length)*(total_length-finished_length)} "
-                  f"(for this file: {(delta_time/finished_length)*(len(read_raw_list)-(i+1))})", end="")
+                  f"(for this file: {(delta_time/finished_length)*(len(read_raw_list)-(i+1))}) "
+                  f"(length: {len(read_raw_list)})", end="")
 
             best_line_set = get_best_line_set(read_raw, ref_set_list)
             best_line_set.set_file_name(file_name=file_name)
 
             line_set_list.append(best_line_set)
 
-        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Writing log files", end="")
+        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / "
+              f"Writing log files (length: {len(line_set_list)})", end="")
+
         for line_set in line_set_list:
             for indel_counter in indel_counter_list:
                 indel_counter.count(line_set)
@@ -126,6 +133,7 @@ if __name__ == '__main__':
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
     log.close()
+
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+

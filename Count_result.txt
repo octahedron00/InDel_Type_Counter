@@ -1,45 +1,5 @@
 # <InDel_Counter Main Log>
-# Log at 2024-01-09 19:27:17.768681 (UTC 9:00:00)
-
-
-
-
-
-<test.fastq>
-
-for PME30(_Vp11G28940)_Replicone~400 in test.fastq: 
-guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-homo(+/+) of WT(0.962 without err)
-
-total 136 (without err: 130) 
-WT: 	125 (0.962 without err)
-1I1D2: 	2 (0.015 without err)
-1I-4: 	1 (0.008 without err)
-1I1D-1: 	1 (0.008 without err)
-1D-3: 	1 (0.008 without err)
-err: 	6 (0.044)
-
-
-for PME31(_Vp10G07510)_Replicone~400 in test.fastq: 
-guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-homo(+/+) of WT(0.92 without err)
-
-total 126 (without err: 125) 
-WT: 	115 (0.92 without err)
-1D-3: 	2 (0.016 without err)
-1I-4: 	2 (0.016 without err)
-2D-2: 	1 (0.008 without err)
-1I19D14: 	1 (0.008 without err)
-11D0: 	1 (0.008 without err)
-3D-2: 	1 (0.008 without err)
-1I1D1: 	1 (0.008 without err)
-1I1D-4: 	1 (0.008 without err)
-err: 	1 (0.008)
-
+# Log at 2024-01-10 02:13:47.709888 (UTC 9:00:00)
 
 
 
@@ -65,6 +25,7 @@ WT: 	4523 (0.986 without err)
 err: 	125 (0.027)
 
 
+
 for PME31(_Vp10G07510)_Replicone~400 in 1_S1_L001_R1_001.fastq: 
 guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
 
@@ -73,7 +34,6 @@ err(err) of err(0 without err)
 error only
 
 total 0 (without err: 0) 
-
 
 
 
@@ -96,6 +56,7 @@ WT: 	2235 (0.516 without err)
 err: 	179 (0.04)
 
 
+
 for PME31(_Vp10G07510)_Replicone~400 in 2_S2_L001_R1_001.fastq: 
 guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
 
@@ -108,7 +69,6 @@ err: 	1 (1.0)
 
 
 
-
 <3_S3_L001_R1_001.fastq>
 
 for PME30(_Vp11G28940)_Replicone~400 in 3_S3_L001_R1_001.fastq: 
@@ -116,6 +76,7 @@ guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
 
 [Result] 
 hetero(-/+) of 1I-4(0.477 without err) and WT(0.397 without err) (sum: 0.874)
+The ratio of next biggest allele is too large
 
 total 4472 (without err: 4049) 
 1I-4: 	1930 (0.477 without err)
@@ -150,6 +111,7 @@ WT: 	1608 (0.397 without err)
 err: 	423 (0.095)
 
 
+
 for PME31(_Vp10G07510)_Replicone~400 in 3_S3_L001_R1_001.fastq: 
 guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
 
@@ -160,137 +122,5 @@ error only
 total 2 (without err: 0) 
 err: 	2 (1.0)
 
-
-
-
-<4_S4_L001_R1_001.fastq>
-
-for PME30(_Vp11G28940)_Replicone~400 in 4_S4_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-hetero(-/+) of 1I-4(0.586 without err) and WT(0.411 without err) (sum: 0.997)
-error ratio is high
-
-total 6520 (without err: 5454) 
-1I-4: 	3195 (0.586 without err)
-WT: 	2244 (0.411 without err)
-1I1D1: 	4 (0.001 without err)
-1I1D2: 	2 (0.0 without err)
-1I1D4: 	2 (0.0 without err)
-1I1D-4: 	2 (0.0 without err)
-1I1D5: 	2 (0.0 without err)
-1I1D3: 	1 (0.0 without err)
-3D-3: 	1 (0.0 without err)
-1I-3: 	1 (0.0 without err)
-err: 	1066 (0.163)
-
-
-for PME31(_Vp10G07510)_Replicone~400 in 4_S4_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-err(err) of err(0 without err)
-error only
-
-total 3 (without err: 0) 
-err: 	3 (1.0)
-
-
-
-
-<5_S5_L001_R1_001.fastq>
-
-for PME30(_Vp11G28940)_Replicone~400 in 5_S5_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-homo(-/-) of 1I-4(0.997 without err)
-
-total 6465 (without err: 5876) 
-1I-4: 	5856 (0.997 without err)
-WT: 	12 (0.002 without err)
-1I-3: 	3 (0.001 without err)
-1D-3: 	3 (0.001 without err)
-1D-4: 	1 (0.0 without err)
-1I1D-4: 	1 (0.0 without err)
-err: 	589 (0.091)
-
-
-for PME31(_Vp10G07510)_Replicone~400 in 5_S5_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-err(err) of err(0 without err)
-error only
-
-total 3 (without err: 0) 
-err: 	3 (1.0)
-
-
-
-
-<6_S6_L001_R1_001.fastq>
-
-for PME30(_Vp11G28940)_Replicone~400 in 6_S6_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-homo(+/+) of WT(0.995 without err)
-
-total 4883 (without err: 4737) 
-WT: 	4714 (0.995 without err)
-1I1D1: 	7 (0.001 without err)
-1I1D4: 	5 (0.001 without err)
-1D-3: 	4 (0.001 without err)
-1I1D5: 	2 (0.0 without err)
-1I-4: 	2 (0.0 without err)
-1I1D2: 	1 (0.0 without err)
-1I1D3: 	1 (0.0 without err)
-1I1D-1: 	1 (0.0 without err)
-err: 	146 (0.03)
-
-
-for PME31(_Vp10G07510)_Replicone~400 in 6_S6_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-err(err) of err(0 without err)
-error only
-
-total 0 (without err: 0) 
-
-
-
-
-<7_S7_L001_R1_001.fastq>
-
-for PME30(_Vp11G28940)_Replicone~400 in 7_S7_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME30 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-homo(+/+) of WT(0.988 without err)
-
-total 4671 (without err: 4526) 
-WT: 	4470 (0.988 without err)
-1I1D-2: 	34 (0.008 without err)
-1I1D1: 	6 (0.001 without err)
-1I1D2: 	5 (0.001 without err)
-1I1D5: 	4 (0.001 without err)
-1I-4: 	4 (0.001 without err)
-1I1D4: 	2 (0.0 without err)
-3D-2: 	1 (0.0 without err)
-err: 	145 (0.031)
-
-
-for PME31(_Vp10G07510)_Replicone~400 in 7_S7_L001_R1_001.fastq: 
-guide_rna: Guide_RNA_for_PME31 (TAACTATCCGCAACACAGCT)
-
-[Result] 
-err(err) of err(0 without err)
-error only
-
-total 3 (without err: 0) 
-err: 	3 (1.0)
 
 

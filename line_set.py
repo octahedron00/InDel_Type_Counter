@@ -15,8 +15,9 @@ PAM_MAX = 5
 ERR_MAX = 0.05
 
 ERR_PADDING = 1
-HOMO_RATIO_MIN = 0.9
-HETERO_RATIO_SUM_MIN = 0.8
+HOMO_RATIO_MIN = 0.8
+HETERO_RATIO_MIN = 0.35
+THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
 
 # 'X' = for both end of main sequence, meaning the subsequence must be between this
@@ -397,18 +398,30 @@ class Genotype:
                     self.allele1_name = key
                     self.allele1_ratio = 1
                     self.allele_set_text = key + "/" + key
+                    if self.allele1_name == "WT":
+                        self.allele_set_shape = "+/+"
+                    else:
+                        self.allele_set_shape = "-/-"
         else:
+            is_third_ratio_good = True
             for key, value in sorted_count_tuple_list:
                 if key != 'err':
-                    if 0 < self.allele1_ratio:
+                    if 0 < self.allele2_ratio:
+                        if key == 'err':
+                            continue
+                        if value / indel_counter.get_len(with_err=False) > THIRD_RATIO_MAX:
+                            is_third_ratio_good = False
+                        break
+                    elif 0 < self.allele1_ratio:
                         self.allele2_name = key
                         self.allele2_ratio = round(value / indel_counter.get_len(with_err=False), 3)
-                        break
                     else:
                         self.allele1_name = key
                         self.allele1_ratio = round(value / indel_counter.get_len(with_err=False), 3)
             if self.allele1_ratio > HOMO_RATIO_MIN:
                 self.name = "homo"
+                if self.allele2_ratio > THIRD_RATIO_MAX:
+                    is_third_ratio_good = False
                 if self.allele1_name == "WT":
                     self.allele_set_shape = "+/+"
                     self.allele_set_text = "WT/WT"
@@ -416,7 +429,7 @@ class Genotype:
                     self.allele_set_shape = "-/-"
                     self.allele_set_text = self.allele1_name + "/" + self.allele1_name
 
-            elif self.allele1_ratio + self.allele2_ratio > HETERO_RATIO_SUM_MIN:
+            elif self.allele2_ratio > HETERO_RATIO_MIN:
                 self.name = "hetero"
                 self.allele_set_text = self.allele1_name + "/" + self.allele2_name
                 if "WT" in (self.allele1_name, self.allele2_name):
@@ -428,12 +441,21 @@ class Genotype:
                 self.warning = "No genotype set is dominant enough"
                 self.allele_set_text = self.allele1_name + "/" + self.allele2_name
                 self.allele_set_shape = "err"
+
+            if not is_third_ratio_good:
+                if len(self.warning) > 0:
+                    self.warning += '\n'
+                    self.warning += "The ratio of next biggest allele is too large"
+                else:
+                    self.warning = "The ratio of next biggest allele is too large"
+
             if (indel_counter.count_map['err'] / len(indel_counter)) > ERR_RATIO_MAX:
                 if len(self.warning) > 0:
                     self.warning += '\n'
-                    self.warning += "error ratio is high"
+
+                    self.warning += "Error ratio is high"
                 else:
-                    self.warning = "error ratio is high"
+                    self.warning = "Error ratio is high"
 
     def __str__(self):
         if self.name in ('hetero', 'ambiguous'):

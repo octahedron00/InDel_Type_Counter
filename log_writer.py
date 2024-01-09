@@ -72,22 +72,30 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
         file_csv_writer.writerow([ref_set.ref_name, ref_set.ref_seq, ref_set.guide_rna_name, ref_set.guide_rna_seq])
 
     file_csv_writer.writerow([])
-    file_csv_writer.writerow(["file", "reference", "warning", "genotype", "_of", "# total", "# error",  "# of genotype"])
+    file_csv_writer.writerow(["file", "reference", "warning", "genotype", "_of",
+                              "# total", "# error", "# without error", "# of genotype"])
 
     for indel_counter_list in indel_counter_list_list:
+        total_lines_for_file = 0
+        for indel_counter in indel_counter_list:
+            total_lines_for_file += len(indel_counter)
         for i, indel_counter in enumerate(indel_counter_list):
             row = [""]
             genotype = indel_counter.get_genotype()
             sorted_count_map_list = indel_counter.get_sorted_count_map_list()
             len_without_err = indel_counter.get_len(with_err=False) + 0.000001
+            len_total = len(indel_counter) + 0.000001
             if i == 0:
                 row[0] = indel_counter.file_name
+            if i == 1:
+                row[0] = f"{total_lines_for_file} lines"
             row += [indel_counter.ref_name,
                     genotype.warning.strip().replace("\n", " + "),
                     genotype.allele_set_text,
-                    str(genotype).strip().replace("\n", " + "),
+                    str(genotype).splitlines()[0].strip(),
                     len(indel_counter),
-                    f"err {indel_counter.count_map['err']}"]
+                    f"err {indel_counter.count_map['err']}({round(indel_counter.count_map['err']/len_total, 3)})",
+                    indel_counter.get_len(with_err=False)]
 
             for key, value in sorted_count_map_list:
                 if key == 'err':
@@ -97,4 +105,5 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
         file_csv_writer.writerow([])
 
     file_csv.close()
+    os.system("start EXCEL.EXE Count_result.csv")
 
