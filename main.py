@@ -5,7 +5,7 @@ import re
 from Bio import SeqIO
 
 from line_set import Line_Set, Reference_Set, InDel_Counter_for_Ref
-from log_writer import write_main_log, write_sub_log, write_main_csv_log
+from log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
 
 DATA_ADDRESS = "./data/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
@@ -131,12 +131,16 @@ if __name__ == '__main__':
         end_time_for_file = datetime.datetime.now()
 
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
-              f"{end_time_for_file - start_time_for_file} is used (length: {len(line_set_list)})")
+              f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
+              f"(length: {len(line_set_list)})")
 
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
     log.close()
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
+
+    if True:
+        os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
 
 

@@ -1,13 +1,22 @@
 import datetime
+import glob
 import os
 from pathlib import Path
 import csv
+import pandas as pd
+from xlsxwriter.workbook import Workbook
+
 
 from line_set import InDel_Counter_for_Ref, Line_Set, Reference_Set, Genotype
 from line_set import MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_MAX, ERR_MAX, ERR_PADDING
 
 SUB_LOG_ADDRESS = "./log/"
 RESULT_LOG_ADDRESS = "./log/"
+
+MAIN_LOG_NAME = "./Count_result.txt"
+CSV_LOG_NAME = "./temporal.csv"
+XLSX_LOG_NAME = "./Count_result.xlsx"
+
 FILIAL_NO = 1
 
 
@@ -58,7 +67,7 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]]):
 
 def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]], ref_set_list: list[Reference_Set]):
 
-    file_csv = open("Count_result.csv", 'w', newline="")
+    file_csv = open(CSV_LOG_NAME, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
 
     file_csv_writer.writerow(["<InDel_Counter Main Log>"])
@@ -73,7 +82,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
 
     file_csv_writer.writerow([])
     file_csv_writer.writerow(["file", "reference", "warning", "genotype", "_of",
-                              "# total", "# error", "# without error", "# of genotype"])
+                              "# total", "# error", "# not err", "# of genotype"])
 
     for indel_counter_list in indel_counter_list_list:
         total_lines_for_file = 0
@@ -105,5 +114,21 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
         file_csv_writer.writerow([])
 
     file_csv.close()
-    os.system("start EXCEL.EXE Count_result.csv")
+
+    # Write Excel file: CSV is not working well in Excel software
+    workbook = Workbook(XLSX_LOG_NAME)
+    worksheet = workbook.add_worksheet()
+    with open(CSV_LOG_NAME, 'rt', encoding='utf8') as f:
+        reader = csv.reader(f)
+        for r, row in enumerate(reader):
+            for c, col in enumerate(row):
+                worksheet.write(r, c, col)
+        worksheet.set_column_pixels(0, 0, 255/1.4275)
+        worksheet.set_column_pixels(2, 2, 255/1.4275)
+        worksheet.set_column_pixels(4, 4, 660/1.4275)
+        worksheet.set_column_pixels(6, 6, 127/1.4275)
+        worksheet.set_column_pixels(8, 9, 150/1.4275)
+        worksheet.set_column_pixels(10, 80, 136/1.4275)
+    workbook.close()
+
 

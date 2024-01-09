@@ -12,7 +12,7 @@ MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
 MATCH_ERR_LETTER = MATCH_LETTER[1:]
 
 PAM_MAX = 5
-ERR_MAX = 0.05
+ERR_MAX = 0.03
 
 ERR_PADDING = 1
 HOMO_RATIO_MIN = 0.8
