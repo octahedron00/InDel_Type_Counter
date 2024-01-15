@@ -1,8 +1,13 @@
 # Set of Global Variables for editing things:
 
-global TASK_TITLE, MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_RANGE_MAX, ERR_MAX, ERR_PADDING, PHRED_MEANINGFUL_MIN
+# 2 variables for user experience
+global TASK_TITLE, OPEN_XLSX_AUTO
+
+# 8 variables for changing results
+global MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_RANGE_MAX, ERR_MAX, ERR_PADDING, PHRED_MEANINGFUL_MIN
 
 TASK_TITLE = ""
+OPEN_XLSX_AUTO = False
 MAT = 2
 MIS = -1
 GAP_OPEN = -50

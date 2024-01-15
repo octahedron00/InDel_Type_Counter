@@ -1,10 +1,9 @@
 import datetime
 import os
-import re
-
+import click
 from Bio import SeqIO
 
-from line_set import Line_Set, Reference_Set, InDel_Counter_for_Ref
+from line_set import Line_Set, Reference, InDel_Counter_for_Ref
 from log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
 import globals
 
@@ -12,7 +11,6 @@ DATA_ADDRESS = "./data/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
-TASK_TITLE = ""
 
 # with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
 
@@ -31,27 +29,57 @@ def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
     return best_line_set
 
 
-# TODO: make command line interface for variables in other modules
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-
+@click.command()
+@click.option('-e', '--err_max', default=0.03,
+              help="The threshold of mismatch ratio in aligned line set, without the main indel.")
+@click.option('-r', '--pam_range_max', default=5,
+              help="The max range of main indel position from PAM sequence")
+@click.option('-p', '--err_padding', default=1,
+              help="The mismatch in this padding length from both end will not be counted")
+@click.option('-s', '--phred_meaningful_score_min', default=30,
+              help="One mismatch will be recognised as an indel, only if the phred score of the nucleotide is higher; "
+                   "For ignoring all 'one mismatch', make it higher than 100")
+@click.option('--score_match', default=2,
+              help="Score for align: for Match")
+@click.option('--score_mismatch', default=-1,
+              help="Score for align: for Mismatch")
+@click.option('--score_gap_open', default=-50,
+              help="Score for align: for Gap Open; low penalty will make fake indels more often")
+@click.option('--score_gap_extend', default=-4,
+              help="Score for align: for Gap Extension; low penalty will make fake indels more often")
+@click.option('-t', '--task_title', default="task at" + str(datetime.datetime.now()), help="Title for this task")
+@click.option('-o', '--open_xlsx_auto', default=False, help="Open the excel log file automatically if finished")
+def main(err_max, pam_range_max, err_padding, phred_meaningful_score_min,
+         score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
+    #
+    # set global variables
+    globals.ERR_MAX = err_max
+    globals.PAM_RANGE_MAX = pam_range_max
+    globals.ERR_PADDING = err_padding
+    globals.PHRED_MEANINGFUL_MIN = phred_meaningful_score_min
+    globals.MAT = score_match
+    globals.MIS = score_mismatch
+    globals.GAP_OPEN = score_gap_open
+    globals.GAP_EXTEND = score_gap_extend
+    globals.TASK_TITLE = task_title
+    globals.OPEN_XLSX_AUTO = open_xlsx_auto
+    
+    #
+    # Get addresses of files from fixed file location, and sort
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
-    # print(address_list)
-
     address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
-    print(address_list)
+    print("File list:", address_list)
 
+    #
+    # Get reference and guide RNA sequences, 
+    # and match them as a 'Reference' class
     ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
-
     ref_raw_list = []
     for item in ref_raw_iter:
         ref_raw_list.append(item)
 
     g_rna_seq_iter = SeqIO.parse(GUIDE_RNA_SET_ADDRESS, "fasta")
-
     g_rna_raw_list = []
     for item in g_rna_seq_iter:
         g_rna_raw_list.append(item)
@@ -60,29 +88,37 @@ if __name__ == '__main__':
     for i, ref_raw in enumerate(ref_raw_list):
         if i >= len(g_rna_raw_list):
             i = len(g_rna_raw_list) - 1
-        ref_set = Reference_Set(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
+        ref_set = Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
         ref_set_list.append(ref_set)
 
+    #
+    # for total result, making list[list[InDel_Counter]]
     all_indel_counter_list_list = []
 
-    print()
-    total_length = 0
+    #
+    # for counting expected time left, count total number of reads
+    total_reads_count = 0
     for i, file_name in enumerate(address_list):
-        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
-
         print(f"\r({i+1}/{len(address_list)}) reading {file_name}", end="")
 
+        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
         for item in read_raw_iter:
-            total_length += 1
+            total_reads_count += 1
+    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files")
+    
+    #
+    # for counting expected time left, count total number of finished number of reads
+    finish_reads_count = 0
 
-    print(f"\rTotal reads :{total_length} for {len(address_list)} files")
-
-    finished_length = 0
-
-    print()
+    # for counting expected time left, check the time of start
     start_time = datetime.datetime.now()
 
     for file_no, file_name in enumerate(address_list):
+        '''
+        For each file, This happens:
+        
+        
+        '''
 
         start_time_for_file = datetime.datetime.now()
         indel_counter_list = []
@@ -99,7 +135,7 @@ if __name__ == '__main__':
 
         line_set_list = []
         for i, read_raw in enumerate(read_raw_list):
-            finished_length += 1
+            finish_reads_count += 1
             now_time = datetime.datetime.now()
             delta_time = now_time - start_time
 
@@ -108,8 +144,8 @@ if __name__ == '__main__':
             if (i % 100) == 0:
                 print(f"\r({file_no + 1}/{len(address_list)}) "
                       f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
-                      f"remaining: {(delta_time/finished_length)*(total_length-finished_length)} "
-                      f"(for this file: {(delta_time/finished_length)*(len(read_raw_list)-(i+1))}) "
+                      f"remaining: {(delta_time/finish_reads_count)*(total_reads_count-finish_reads_count)} "
+                      f"(for this file: {(delta_time/finish_reads_count)*(len(read_raw_list)-(i+1))}) "
                       f"(length: {len(read_raw_list)})", end="")
 
             best_line_set = get_best_line_set(read_raw, ref_set_list)
@@ -151,7 +187,15 @@ if __name__ == '__main__':
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
 
-    if True:
+    if globals.OPEN_XLSX_AUTO:
         os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
+
+
+if __name__ == '__main__':
+    print("Initiating...")
+    main()
+    print("Things never works below here... << error message")
+
+
 
 

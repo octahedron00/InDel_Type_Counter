@@ -1,12 +1,8 @@
 import datetime
-import glob
-import os
-from pathlib import Path
 import csv
-import pandas as pd
 from xlsxwriter.workbook import Workbook
 
-from line_set import InDel_Counter_for_Ref, Line_Set, Reference_Set, Genotype
+from line_set import InDel_Counter_for_Ref, Line_Set, Reference, Genotype
 import globals
 
 SUB_LOG_ADDRESS = "./log/"
@@ -64,7 +60,7 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]]):
     file_log.close()
 
 
-def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]], ref_set_list: list[Reference_Set]):
+def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]], ref_set_list: list[Reference]):
 
     file_csv = open(CSV_LOG_NAME, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
@@ -114,6 +110,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
 
     file_csv.close()
 
+    #
     # Write Excel file: CSV is not working well in Excel software
     workbook = Workbook(XLSX_LOG_NAME)
     worksheet = workbook.add_worksheet()

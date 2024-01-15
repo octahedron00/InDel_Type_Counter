@@ -17,7 +17,7 @@ ERR_RATIO_MAX = 0.1
 READ_MIN = 30
 
 
-class Reference_Set:
+class Reference:
     ref_raw = None
     ref_seq = ""
     ref_name = ""
@@ -38,7 +38,7 @@ class Reference_Set:
 
     def __str__(self):
         if len(self.ref_seq) < 30:
-            return f"<Class Reference_set>\n" \
+            return f"<Class Reference>\n" \
                    f"ref_raw: {self.ref_raw}\n" \
                    f"ref_seq: {self.ref_seq}\n" \
                    f"ref_name: {self.ref_name}\n" \
@@ -46,7 +46,7 @@ class Reference_Set:
                    f"guide_rna_seq: {self.guide_rna_seq}\n" \
                    f"guide_rna_name: {self.guide_rna_name}\n"
 
-        return f"<Class Reference_set>\n" \
+        return f"<Class Reference>\n" \
                f"ref_raw: {self.ref_raw}\n" \
                f"ref_seq: {self.ref_seq[:20]}...{self.ref_seq[-5:]}\n" \
                f"guide_rna_raw: {self.guide_rna_raw}\n" \
@@ -77,7 +77,7 @@ class Line_Set:
     score = 0
     int_score = 0
 
-    def __init__(self, read_raw: SeqIO.SeqRecord, ref_set: Reference_Set):
+    def __init__(self, read_raw: SeqIO.SeqRecord, ref_set: Reference):
 
         self.ref_set = ref_set
         self.ref_name = ref_set.ref_name
@@ -300,7 +300,7 @@ class InDel_Counter_for_Ref:
     guide_rna_name = ""
     guide_rna_seq = ""
 
-    def __init__(self, ref_set: Reference_Set):
+    def __init__(self, ref_set: Reference):
         self.ref_name = ref_set.ref_name
         self.guide_rna_name = ref_set.guide_rna_name
         self.guide_rna_seq = ref_set.guide_rna_seq
