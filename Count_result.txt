@@ -1,6 +1,14 @@
-# <InDel_Counter Main Log>
-# Log at 2024-01-15 13:35:25.041014 (UTC 9:00:00)
+# <InDel_Type_Counter 1.0.0 Main Log>
+# Log at 2024-01-15 14:46:10.561302 (UTC 9:00:00)
+# 
+# Task Title: Task at 2024-01-15 14:46:09.349211
 
+ERR_MAX: 0.03
+PAM_RANGE_MAX: 5
+ERR_PADDING: 1
+PHRED_MEANINGFUL_SCORE_MIN: 100
+SCORE_MATCH: 2 / SCORE_MISMATCH: -1
+SCORE_GAP_OPEN: -50 / SCORE_GAP_EXTEND: -4
 
 
 <test_for_mixed_PME.fastq>
@@ -9,13 +17,11 @@ for PME30(_Vp11G28940)_Replicone~400 in test_for_mixed_PME.fastq:
 guide_rna: Guide_RNA_for_PME30/31 (TAACTATCCGCAACACAGCT)
 
 [Result] 
-homo(+/+) of WT(0.978 without err)
+homo(+/+) of WT(0.991 without err)
 
 total 235 (without err: 225) 
-WT: 	220 (0.978 without err)
-1I1D2: 	2 (0.009 without err)
+WT: 	223 (0.991 without err)
 1I-4: 	1 (0.004 without err)
-1I1D-1: 	1 (0.004 without err)
 1D-3: 	1 (0.004 without err)
 err: 	10 (0.043)
 
@@ -25,22 +31,17 @@ for PME31(_Vp10G07510)_Replicone~400 in test_for_mixed_PME.fastq:
 guide_rna: Guide_RNA_for_PME30/31 (TAACTATCCGCAACACAGCT)
 
 [Result] 
-homo(+/+) of WT(0.933 without err)
+homo(+/+) of WT(0.95 without err)
 
 total 303 (without err: 300) 
-WT: 	280 (0.933 without err)
+WT: 	285 (0.95 without err)
 3D-2: 	4 (0.013 without err)
 1D-3: 	3 (0.01 without err)
 1I-4: 	3 (0.01 without err)
 2D-2: 	1 (0.003 without err)
 1I19D14: 	1 (0.003 without err)
 11D0: 	1 (0.003 without err)
-1I1D1: 	1 (0.003 without err)
-1I1D-4: 	1 (0.003 without err)
-1I1D-2: 	1 (0.003 without err)
-1I1D2: 	1 (0.003 without err)
 4D0: 	1 (0.003 without err)
-1I1D-3: 	1 (0.003 without err)
 6D-2: 	1 (0.003 without err)
 err: 	3 (0.01)
 

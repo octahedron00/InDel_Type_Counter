@@ -47,7 +47,7 @@ def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
               help="Score for align: for Gap Open; low penalty will make fake indels more often")
 @click.option('--score_gap_extend', default=-4,
               help="Score for align: for Gap Extension; low penalty will make fake indels more often")
-@click.option('-t', '--task_title', default="task at" + str(datetime.datetime.now()), help="Title for this task")
+@click.option('-t', '--task_title', default="Task at " + str(datetime.datetime.now()), help="Title for this task")
 @click.option('-o', '--open_xlsx_auto', default=False, help="Open the excel log file automatically if finished")
 def main(err_max, pam_range_max, err_padding, phred_meaningful_score_min,
          score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
@@ -116,7 +116,26 @@ def main(err_max, pam_range_max, err_padding, phred_meaningful_score_min,
     for file_no, file_name in enumerate(address_list):
         '''
         For each file, This happens:
-        
+            get a list of 'reads' from file (NGS-fastq only),
+            
+            for each read:
+                for each reference:
+                    (make line_set from 1 read and 1 reference)
+                    make possible aligns with each reference sequences,
+                    align the phred score line,
+                    get the position of guide_RNA and PAM sequence,
+                    get the indel type by checking around the PAM starting point,
+                    get the score(mismatch ratio without main indel) and check if it is error seq or not.
+                
+                pick the best aligned line_set by score, 
+                and add it to the list.
+                
+            for each line_set in list:
+                for each indel_counter in list:
+                    if line_set.ref == indel_counter.ref:
+                        indel_counter.count(line_set) < count the each indel type
+                
+            
         
         '''
 
@@ -165,19 +184,18 @@ def main(err_max, pam_range_max, err_padding, phred_meaningful_score_min,
         indel_counter_map = {}
         for indel_counter in indel_counter_list:
             indel_counter_map[indel_counter.ref_name] = indel_counter
-
         line_set_list.sort(key=lambda l: len(l))
         line_set_list.sort(key=lambda l: indel_counter_map[l.ref_name].count_map[l.indel_type])
         line_set_list.sort(key=lambda l: l.indel_type == 'err')
 
+        # writing sub log
         for indel_counter in indel_counter_list:
             write_sub_log(line_set_list=[l for l in line_set_list if l.ref_name == indel_counter.ref_name],
                           indel_counter=indel_counter, file_name=file_name)
 
+        # finish: add it to the list, end time calc, print.
         all_indel_counter_list_list.append(indel_counter_list)
-
         end_time_for_file = datetime.datetime.now()
-
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})")
@@ -186,12 +204,12 @@ def main(err_max, pam_range_max, err_padding, phred_meaningful_score_min,
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
-
     if globals.OPEN_XLSX_AUTO:
         os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
 
 
 if __name__ == '__main__':
+    print("InDel Type Counter ver. "+globals.VERSION)
     print("Initiating...")
     main()
     print("Things never works below here... << error message")

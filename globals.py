@@ -1,3 +1,5 @@
+VERSION = '1.0.0'
+
 # Set of Global Variables for editing things:
 
 # 2 variables for user experience
@@ -29,3 +31,22 @@ def get_align_matrix_for_subsequence_positioning():
         ('X', 'A'): -1000, ('X', 'T'): -1000, ('X', 'G'): -1000, ('X', 'C'): -1000, ('X', '-'): -1000, ('X', 'X'): MAT,
     }
     return matrix
+
+
+def get_text_of_global_variables():
+    txt = f"" \
+          f"ERR_MAX: {ERR_MAX}\n" \
+          f"PAM_RANGE_MAX: {PAM_RANGE_MAX}\n" \
+          f"ERR_PADDING: {ERR_PADDING}\n" \
+          f"PHRED_MEANINGFUL_SCORE_MIN: {PHRED_MEANINGFUL_MIN}\n" \
+          f"SCORE_MATCH: {MAT} / SCORE_MISMATCH: {MIS}\n" \
+          f"SCORE_GAP_OPEN: {GAP_OPEN} / SCORE_GAP_EXTEND: {GAP_EXTEND}\n"
+    return txt
+
+
+def get_row_of_global_variables():
+    row = [["ERR_MAX", ERR_MAX, "ERR_PADDING", ERR_PADDING],
+           ["PAM_RANGE_MAX", PAM_RANGE_MAX, "PHRED_MEANINGFUL_SCORE_MIN", PHRED_MEANINGFUL_MIN],
+           ["SCORE_MATCH", MAT, "SCORE_MISMATCH", MIS],
+           ["SCORE_GAP_OPEN,", GAP_OPEN, "SCORE_GAP_EXTEND", GAP_EXTEND]]
+    return row

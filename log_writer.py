@@ -13,26 +13,30 @@ CSV_LOG_NAME = "./count_result.csv"
 XLSX_LOG_NAME = "./count_result.xlsx"
 
 
-# TODO: Show the variables
-
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Ref, file_name: str):
     file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
 
     file_log.write(f""
-                   f"# <InDel_Counter Side Log for {file_name}>\n"
+                   f"# <InDel_Type_Counter {globals.VERSION} Side Log for {file_name}>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
                    f"# \n"
+                   f"# Task Title: {globals.TASK_TITLE}\n"
                    f"# {file_name} as a data / {indel_counter.ref_name} as a reference sequence\n"
+                   f"\n"
+                   f"{globals.get_text_of_global_variables()}"
                    f"\n"
                    f"\n")
 
     file_log.write(str(indel_counter))
-    file_log.write("\n\n\n")
+    file_log.write("\n"
+                   "\n"
+                   "\n")
 
     for line_set in line_set_list:
         if line_set.ref_name == indel_counter.ref_name:
             file_log.write(str(line_set))
-            file_log.write("\n\n")
+            file_log.write("\n"
+                           "\n")
 
     file_log.close()
 
@@ -41,10 +45,12 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]]):
 
     file_log = open("Count_result.txt", "w")
 
-    file_log.write(f""
-                   f"# <InDel_Counter Main Log>\n"
+    file_log.write(f"# <InDel_Type_Counter {globals.VERSION} Main Log>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
+                   f"# \n"
+                   f"# Task Title: {globals.TASK_TITLE}\n"
                    f"\n"
+                   f"{globals.get_text_of_global_variables()}"
                    f"\n"
                    f"\n")
 
@@ -65,17 +71,20 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
     file_csv = open(CSV_LOG_NAME, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
 
-    file_csv_writer.writerow(["<InDel_Counter Main Log>"])
+    file_csv_writer.writerow(["<InDel_Type_Counter {globals.VERSION} Main Log>"])
     file_csv_writer.writerow(
         [f"Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})"])
-    file_csv_writer.writerow(["PAM_RANGE_MAX", globals.PAM_RANGE_MAX, "ERR_MAX", globals.ERR_MAX])
+    file_csv_writer.writerow(["Task Title", globals.TASK_TITLE])
+    file_csv_writer.writerows(globals.get_row_of_global_variables())
     file_csv_writer.writerow([])
+
     file_csv_writer.writerow(["References:"])
     file_csv_writer.writerow(["Name", "seq", "Guide RNA name", "Guide RNA seq"])
     for ref_set in ref_set_list:
         file_csv_writer.writerow([ref_set.ref_name, ref_set.ref_seq, ref_set.guide_rna_name, ref_set.guide_rna_seq])
 
     file_csv_writer.writerow([])
+    file_csv_writer.writerow(["Results:"])
     file_csv_writer.writerow(["file", "reference", "warning", "genotype", "_of",
                               "# total", "# error", "# not err", "# of genotype"])
 

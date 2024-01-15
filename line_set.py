@@ -85,11 +85,20 @@ class Line_Set:
         self.guide_rna_name = ref_set.guide_rna_name
 
         self.read_name = read_raw.name
+
+        # try aligning, and get ref, match, seq line here
         self._set_align_line_set(ref_seq=ref_set.ref_seq, read_seq=str(read_raw.seq).upper())
+
+        # get aligned phred line here
         self._set_aligned_phred_line(read_raw=read_raw)
+
+        # get pos line and cut position (endpoint of guide_RNA / startpoint of PAM)
         self._set_indel_pos_line(guide_rna_seq=ref_set.guide_rna_seq)
+
+        # get indel type from the position... only if guide RNA sequence matches.
         self._set_main_indel(cut_pos=self.cut_pos)
 
+        # check whether the type is error or not... and set align score with ratio of mismatch without main indel
         self._set_score_and_check_err()
 
     def __len__(self):

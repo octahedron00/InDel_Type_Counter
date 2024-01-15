@@ -10,9 +10,9 @@ class Line_Set
 
 기본 main.
 
-    read all
 
-    for data file
+
+    for data_file
         for data_read
             find_gene()
 
