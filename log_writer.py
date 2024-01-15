@@ -6,9 +6,8 @@ import csv
 import pandas as pd
 from xlsxwriter.workbook import Workbook
 
-
 from line_set import InDel_Counter_for_Ref, Line_Set, Reference_Set, Genotype
-from line_set import MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_RANGE_MAX, ERR_MAX, ERR_PADDING
+import globals
 
 SUB_LOG_ADDRESS = "./log/"
 RESULT_LOG_ADDRESS = "./log/"
@@ -18,8 +17,7 @@ CSV_LOG_NAME = "./count_result.csv"
 XLSX_LOG_NAME = "./count_result.xlsx"
 
 
-# TODO: make the log line set ordered by...
-# TODO: show the variables
+# TODO: Show the variables
 
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Ref, file_name: str):
     file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
@@ -74,7 +72,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
     file_csv_writer.writerow(["<InDel_Counter Main Log>"])
     file_csv_writer.writerow(
         [f"Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})"])
-    file_csv_writer.writerow(["PAM_RANGE_MAX", PAM_RANGE_MAX, "ERR_MAX", ERR_MAX])
+    file_csv_writer.writerow(["PAM_RANGE_MAX", globals.PAM_RANGE_MAX, "ERR_MAX", globals.ERR_MAX])
     file_csv_writer.writerow([])
     file_csv_writer.writerow(["References:"])
     file_csv_writer.writerow(["Name", "seq", "Guide RNA name", "Guide RNA seq"])

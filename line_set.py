@@ -1,40 +1,20 @@
 from Bio.Align import PairwiseAligner, substitution_matrices
 from Bio import SeqIO
+import globals
 
-MATCH = MAT = 2
-MISMATCH = MIS = -1
-GAP_OPEN = -50
-GAP_EXTEND = -4
-
-PHRED_MEANINGFUL_MIN = 30
-
+# Variables for letter recognition
 MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
 MATCH_ERR_LETTER = MATCH_LETTER[1:]
 
-PAM_RANGE_MAX = 5
-ERR_MAX = 0.03
-ERR_PADDING = 1
+# Variables for uh... global things: Can be changed in main.py and command line interface:
+# All in globals.py
 
-# Variables only for
+# Variables only for validation
 HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
 READ_MIN = 30
-
-# 'X' = for both end of main sequence, meaning the subsequence must be between the sequence.
-ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
-    ('A', 'A'): MAT, ('A', 'T'): MIS, ('A', 'G'): MIS, ('A', 'C'): MIS, ('A', '-'): MIS, ('A', 'X'): -1000,
-    ('T', 'A'): MIS, ('T', 'T'): MAT, ('T', 'G'): MIS, ('T', 'C'): MIS, ('T', '-'): MIS, ('T', 'X'): -1000,
-    ('G', 'A'): MIS, ('G', 'T'): MIS, ('G', 'G'): MAT, ('G', 'C'): MIS, ('G', '-'): MIS, ('G', 'X'): -1000,
-    ('C', 'A'): MIS, ('C', 'T'): MIS, ('C', 'G'): MIS, ('C', 'C'): MAT, ('C', '-'): MIS, ('C', 'X'): -1000,
-    ('-', 'A'): MIS, ('-', 'T'): MIS, ('-', 'G'): MIS, ('-', 'C'): MIS, ('-', '-'): MAT, ('-', 'X'): -1000,
-    ('X', 'A'): -1000, ('X', 'T'): -1000, ('X', 'G'): -1000, ('X', 'C'): -1000, ('X', '-'): -1000, ('X', 'X'): MAT,
-}
-
-
-def test():
-    ERR_MAX = 0.02
 
 
 class Reference_Set:
@@ -131,10 +111,10 @@ class Line_Set:
         ref_seq = "X" + ref_seq + "X"
 
         aligner = PairwiseAligner()
-        matrix = substitution_matrices.Array(data=ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION)
+        matrix = substitution_matrices.Array(data=globals.get_align_matrix_for_subsequence_positioning())
         aligner.substitution_matrix = matrix
-        aligner.open_gap_score = GAP_OPEN
-        aligner.extend_gap_score = GAP_EXTEND
+        aligner.open_gap_score = globals.GAP_OPEN
+        aligner.extend_gap_score = globals.GAP_EXTEND
 
         alignments = aligner.align(ref_seq, read_seq)
 
@@ -209,7 +189,7 @@ class Line_Set:
             self.cut_pos = -1000
             return
 
-        ref_line_buffer = self.ref_line + "X" * (PAM_RANGE_MAX * 2)
+        ref_line_buffer = self.ref_line + "X" * (globals.PAM_RANGE_MAX * 2)
 
         pos_line = " " * pri
         for i in range(pri, pre):
@@ -218,7 +198,7 @@ class Line_Set:
             else:
                 pos_line += ">"
 
-        for i in range(PAM_RANGE_MAX):
+        for i in range(globals.PAM_RANGE_MAX):
             if ref_line_buffer[pre + i] == ref_line_buffer[pre + i + 1] == "G":
                 pos_line += '<<<'
                 break
@@ -246,7 +226,7 @@ class Line_Set:
         indel_length = 0
         indel_reason = "(WT)"
 
-        for i, m in enumerate(match_line + str("X" * (PAM_RANGE_MAX * 2))):
+        for i, m in enumerate(match_line + str("X" * (globals.PAM_RANGE_MAX * 2))):
             if i < 2:
                 continue
             if i >= (len(phred_line)):
@@ -266,12 +246,12 @@ class Line_Set:
                     indel_i += 1
 
             elif p2 >= 0:
-                if indel_d == indel_i == indel_length == 1 and ((pre - PAM_RANGE_MAX) < p2) and (p1 < (pre + PAM_RANGE_MAX)):
-                    if (ord(phred_line[p1]) - 33) > PHRED_MEANINGFUL_MIN:
+                if indel_d == indel_i == indel_length == 1 and ((pre - globals.PAM_RANGE_MAX) < p2) and (p1 < (pre + globals.PAM_RANGE_MAX)):
+                    if (ord(phred_line[p1]) - 33) > globals.PHRED_MEANINGFUL_MIN:
                         indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                         indel_reason = "Indel position confirmed by guide RNA and signal score"
                         indel_length = indel_length
-                elif ((pre - PAM_RANGE_MAX) < p2) and (p1 < (pre + PAM_RANGE_MAX)):
+                elif ((pre - globals.PAM_RANGE_MAX) < p2) and (p1 < (pre + globals.PAM_RANGE_MAX)):
                     indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                     indel_reason = "Indel position confirmed by guide RNA sequence"
                     indel_length = indel_length
@@ -301,14 +281,14 @@ class Line_Set:
         if len(self) < 5:
             return 0
         a = 0
-        for c in self.match_line[ERR_PADDING:-ERR_PADDING]:
+        for c in self.match_line[globals.ERR_PADDING:-globals.ERR_PADDING]:
             if c == '|':
                 a += 1
-        score = a / (len(self) - 2 * ERR_PADDING - self.indel_length)
+        score = a / (len(self) - 2 * globals.ERR_PADDING - self.indel_length)
 
         self.score = score
 
-        if score < (1 - ERR_MAX):
+        if score < (1 - globals.ERR_MAX):
             self.indel_type = 'err'
             self.indel_reason = 'Too many mismatch and error'
         self.int_score = int((score - 1) * 1000)

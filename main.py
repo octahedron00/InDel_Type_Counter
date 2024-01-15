@@ -5,15 +5,14 @@ import re
 from Bio import SeqIO
 
 from line_set import Line_Set, Reference_Set, InDel_Counter_for_Ref
-from line_set import ERR_MAX, PAM_RANGE_MAX, ERR_PADDING, test
 from log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
+import globals
 
 DATA_ADDRESS = "./data/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 TASK_TITLE = ""
-FILIAL_NO = 1
 
 # with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
 
@@ -37,8 +36,6 @@ def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-
-    test()
 
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
