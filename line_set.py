@@ -11,17 +11,18 @@ PHRED_MEANINGFUL_MIN = 30
 MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
 MATCH_ERR_LETTER = MATCH_LETTER[1:]
 
-PAM_MAX = 5
+PAM_RANGE_MAX = 5
 ERR_MAX = 0.03
-
 ERR_PADDING = 1
+
+# Variables only for
 HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
 READ_MIN = 30
 
-# 'X' = for both end of main sequence, meaning the subsequence must be between this
+# 'X' = for both end of main sequence, meaning the subsequence must be between the sequence.
 ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
     ('A', 'A'): MAT, ('A', 'T'): MIS, ('A', 'G'): MIS, ('A', 'C'): MIS, ('A', '-'): MIS, ('A', 'X'): -1000,
     ('T', 'A'): MIS, ('T', 'T'): MAT, ('T', 'G'): MIS, ('T', 'C'): MIS, ('T', '-'): MIS, ('T', 'X'): -1000,
@@ -30,6 +31,10 @@ ALIGN_MATRIX_FOR_SUBSEQUENCE_POSITION = {
     ('-', 'A'): MIS, ('-', 'T'): MIS, ('-', 'G'): MIS, ('-', 'C'): MIS, ('-', '-'): MAT, ('-', 'X'): -1000,
     ('X', 'A'): -1000, ('X', 'T'): -1000, ('X', 'G'): -1000, ('X', 'C'): -1000, ('X', '-'): -1000, ('X', 'X'): MAT,
 }
+
+
+def test():
+    ERR_MAX = 0.02
 
 
 class Reference_Set:
@@ -204,7 +209,7 @@ class Line_Set:
             self.cut_pos = -1000
             return
 
-        ref_line_buffer = self.ref_line + "X" * (PAM_MAX * 2)
+        ref_line_buffer = self.ref_line + "X" * (PAM_RANGE_MAX * 2)
 
         pos_line = " " * pri
         for i in range(pri, pre):
@@ -213,7 +218,7 @@ class Line_Set:
             else:
                 pos_line += ">"
 
-        for i in range(PAM_MAX):
+        for i in range(PAM_RANGE_MAX):
             if ref_line_buffer[pre + i] == ref_line_buffer[pre + i + 1] == "G":
                 pos_line += '<<<'
                 break
@@ -241,7 +246,7 @@ class Line_Set:
         indel_length = 0
         indel_reason = "(WT)"
 
-        for i, m in enumerate(match_line + str("X" * (PAM_MAX * 2))):
+        for i, m in enumerate(match_line + str("X" * (PAM_RANGE_MAX * 2))):
             if i < 2:
                 continue
             if i >= (len(phred_line)):
@@ -261,12 +266,12 @@ class Line_Set:
                     indel_i += 1
 
             elif p2 >= 0:
-                if indel_d == indel_i == indel_length == 1 and ((pre - PAM_MAX) < p2) and (p1 < (pre + PAM_MAX)):
+                if indel_d == indel_i == indel_length == 1 and ((pre - PAM_RANGE_MAX) < p2) and (p1 < (pre + PAM_RANGE_MAX)):
                     if (ord(phred_line[p1]) - 33) > PHRED_MEANINGFUL_MIN:
                         indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                         indel_reason = "Indel position confirmed by guide RNA and signal score"
                         indel_length = indel_length
-                elif ((pre - PAM_MAX) < p2) and (p1 < (pre + PAM_MAX)):
+                elif ((pre - PAM_RANGE_MAX) < p2) and (p1 < (pre + PAM_RANGE_MAX)):
                     indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                     indel_reason = "Indel position confirmed by guide RNA sequence"
                     indel_length = indel_length
@@ -385,6 +390,17 @@ class Genotype:
     allele_set_shape = ""
 
     def __init__(self, indel_counter: InDel_Counter_for_Ref, sorted_count_tuple_list: list):
+
+        if len(indel_counter) < READ_MIN:
+            if len(self.warning) > 0:
+                self.warning += '\n'
+                self.warning += "Reads not enough"
+            else:
+                self.warning = "Reads not enough"
+                # TODO: add warning_append function inside the class, rewrite warnings shorter
+                # TODO: make the code easy to read
+                # TODO: make another function for all these works... maybe?
+
         if len(sorted_count_tuple_list) < 2:
             self.name = "err"
             self.warning = "error only"
@@ -442,13 +458,6 @@ class Genotype:
                 self.warning = "No genotype set is dominant enough"
                 self.allele_set_text = self.allele1_name + "/" + self.allele2_name
                 self.allele_set_shape = "err"
-
-            if len(indel_counter) < READ_MIN:
-                if len(self.warning) > 0:
-                    self.warning += '\n'
-                    self.warning += "Reads not enough"
-                else:
-                    self.warning = "Reads not enough"
 
             if not is_third_ratio_good:
                 if len(self.warning) > 0:

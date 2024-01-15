@@ -5,6 +5,7 @@ import re
 from Bio import SeqIO
 
 from line_set import Line_Set, Reference_Set, InDel_Counter_for_Ref
+from line_set import ERR_MAX, PAM_RANGE_MAX, ERR_PADDING, test
 from log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
 
 DATA_ADDRESS = "./data/"
@@ -31,8 +32,13 @@ def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
     return best_line_set
 
 
+# TODO: make command line interface for variables in other modules
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+
+    test()
 
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
@@ -59,8 +65,6 @@ if __name__ == '__main__':
             i = len(g_rna_raw_list) - 1
         ref_set = Reference_Set(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
         ref_set_list.append(ref_set)
-
-    log = open("log_test.txt", 'w')
 
     all_indel_counter_list_list = []
 
@@ -121,10 +125,21 @@ if __name__ == '__main__':
 
         for line_set in line_set_list:
             for indel_counter in indel_counter_list:
-                indel_counter.count(line_set)
+                if indel_counter.ref_name == line_set.ref_name:
+                    indel_counter.count(line_set)
+
+        # Sorting Line Set List.
+        indel_counter_map = {}
+        for indel_counter in indel_counter_list:
+            indel_counter_map[indel_counter.ref_name] = indel_counter
+
+        line_set_list.sort(key=lambda l: len(l))
+        line_set_list.sort(key=lambda l: indel_counter_map[l.ref_name].count_map[l.indel_type])
+        line_set_list.sort(key=lambda l: l.indel_type == 'err')
 
         for indel_counter in indel_counter_list:
-            write_sub_log(line_set_list=line_set_list, indel_counter=indel_counter, file_name=file_name)
+            write_sub_log(line_set_list=[l for l in line_set_list if l.ref_name == indel_counter.ref_name],
+                          indel_counter=indel_counter, file_name=file_name)
 
         all_indel_counter_list_list.append(indel_counter_list)
 
@@ -136,7 +151,6 @@ if __name__ == '__main__':
 
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
-    log.close()
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
 

@@ -8,17 +8,18 @@ from xlsxwriter.workbook import Workbook
 
 
 from line_set import InDel_Counter_for_Ref, Line_Set, Reference_Set, Genotype
-from line_set import MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_MAX, ERR_MAX, ERR_PADDING
+from line_set import MAT, MIS, GAP_OPEN, GAP_EXTEND, PAM_RANGE_MAX, ERR_MAX, ERR_PADDING
 
 SUB_LOG_ADDRESS = "./log/"
 RESULT_LOG_ADDRESS = "./log/"
 
-MAIN_LOG_NAME = "./Count_result.txt"
-CSV_LOG_NAME = "./Count_result.csv"
-XLSX_LOG_NAME = "./Count_result.xlsx"
+MAIN_LOG_NAME = "./count_result.txt"
+CSV_LOG_NAME = "./count_result.csv"
+XLSX_LOG_NAME = "./count_result.xlsx"
 
-FILIAL_NO = 1
 
+# TODO: make the log line set ordered by...
+# TODO: show the variables
 
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Ref, file_name: str):
     file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
@@ -27,7 +28,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    f"# <InDel_Counter Side Log for {file_name}>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
                    f"# \n"
-                   f"# {file_name} as a data for Transgenic filial {FILIAL_NO}\n"
+                   f"# {file_name} as a data / {indel_counter.ref_name} as a reference sequence\n"
                    f"\n"
                    f"\n")
 
@@ -73,7 +74,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
     file_csv_writer.writerow(["<InDel_Counter Main Log>"])
     file_csv_writer.writerow(
         [f"Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})"])
-    file_csv_writer.writerow(["PAM_MAX", PAM_MAX, "ERR_MAX", ERR_MAX])
+    file_csv_writer.writerow(["PAM_RANGE_MAX", PAM_RANGE_MAX, "ERR_MAX", ERR_MAX])
     file_csv_writer.writerow([])
     file_csv_writer.writerow(["References:"])
     file_csv_writer.writerow(["Name", "seq", "Guide RNA name", "Guide RNA seq"])
@@ -99,7 +100,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]
             if i == 1:
                 row[0] = f"{total_lines_for_file} lines"
             row += [indel_counter.ref_name,
-                    genotype.warning.strip().replace("\n", " + "),
+                    genotype.warning.strip().replace("\n", ", "),
                     genotype.allele_set_text,
                     str(genotype).splitlines()[0].strip(),
                     len(indel_counter),
