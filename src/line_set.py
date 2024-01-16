@@ -1,15 +1,15 @@
 from Bio.Align import PairwiseAligner, substitution_matrices
 from Bio import SeqIO
-import globals
+import src.globals as glv
 
 # Variables for letter recognition
 MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
 MATCH_ERR_LETTER = MATCH_LETTER[1:]
 
-# Variables for uh... global things: Can be changed in main.py and command line interface:
-# All in globals.py
+# Variables for uh... making the results:
+# Can be changed by command line interface; All in globals.py
 
-# Variables only for validation
+# Variables for validation
 HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
@@ -73,9 +73,11 @@ class Line_Set:
     indel_length = 0
     indel_reason = ""
     cut_pos = 0
+    indel_same_type_count = 0
 
     score = 0
     int_score = 0
+    phred_score = 0
 
     def __init__(self, read_raw: SeqIO.SeqRecord, ref_set: Reference):
 
@@ -90,7 +92,7 @@ class Line_Set:
         self._set_align_line_set(ref_seq=ref_set.ref_seq, read_seq=str(read_raw.seq).upper())
 
         # get aligned phred line here
-        self._set_aligned_phred_line(read_raw=read_raw)
+        self._set_aligned_phred_line_and_score(read_raw=read_raw)
 
         # get pos line and cut position (endpoint of guide_RNA / startpoint of PAM)
         self._set_indel_pos_line(guide_rna_seq=ref_set.guide_rna_seq)
@@ -105,8 +107,8 @@ class Line_Set:
         return len(self.ref_line)
 
     def __str__(self):
-        return f"@\tref: {self.ref_name}\t/read: {self.read_name}\t/file: {self.file_name}\n" \
-               f"@\tindel: {self.indel_type}\t/score: {self.int_score}\t/reason: {self.indel_reason}\n" \
+        return f"@\tref: {self.ref_name}\t /read: {self.read_name}\t /file: {self.file_name}\n" \
+               f"@\tscore: {self.int_score}\t /indel: {self.indel_type}({self.indel_same_type_count})\t /reason: \"{self.indel_reason}\"\n" \
                f"position: {self.pos_line}\n" \
                f"ref_line: {self.ref_line}\n" \
                f"match   : {self.match_line}\n" \
@@ -120,10 +122,10 @@ class Line_Set:
         ref_seq = "X" + ref_seq + "X"
 
         aligner = PairwiseAligner()
-        matrix = substitution_matrices.Array(data=globals.get_align_matrix_for_subsequence_positioning())
+        matrix = substitution_matrices.Array(data=glv.get_align_matrix_for_subsequence_positioning())
         aligner.substitution_matrix = matrix
-        aligner.open_gap_score = globals.GAP_OPEN
-        aligner.extend_gap_score = globals.GAP_EXTEND
+        aligner.open_gap_score = glv.GAP_OPEN
+        aligner.extend_gap_score = glv.GAP_EXTEND
 
         alignments = aligner.align(ref_seq, read_seq)
 
@@ -154,7 +156,7 @@ class Line_Set:
         self.match_line = match_line
         self.read_line = read_line
 
-    def _set_aligned_phred_line(self, read_raw: SeqIO.SeqRecord):
+    def _set_aligned_phred_line_and_score(self, read_raw: SeqIO.SeqRecord):
 
         quality = read_raw.letter_annotations['phred_quality']
 
@@ -162,9 +164,10 @@ class Line_Set:
             return "# phred score not available"
 
         phred_line = ""
+        phred_score = 0
         for a in quality:
             phred_line += str(chr(a + 33))
-
+            phred_score += a
         aligned_phred_line = ""
 
         for c in self.read_line:
@@ -174,6 +177,7 @@ class Line_Set:
                 aligned_phred_line += phred_line[0]
                 phred_line = phred_line[1:]
 
+        self.phred_score = phred_score / (len(phred_line) + 0.0000001)
         self.phred_line = aligned_phred_line
 
     def _set_indel_pos_line(self, guide_rna_seq: str):
@@ -198,7 +202,7 @@ class Line_Set:
             self.cut_pos = -1000
             return
 
-        ref_line_buffer = self.ref_line + "X" * (globals.PAM_RANGE_MAX * 2)
+        ref_line_buffer = self.ref_line + "X" * (glv.PAM_RANGE_MAX * 2)
 
         pos_line = " " * pri
         for i in range(pri, pre):
@@ -207,7 +211,7 @@ class Line_Set:
             else:
                 pos_line += ">"
 
-        for i in range(globals.PAM_RANGE_MAX):
+        for i in range(glv.PAM_RANGE_MAX):
             if ref_line_buffer[pre + i] == ref_line_buffer[pre + i + 1] == "G":
                 pos_line += '<<<'
                 break
@@ -235,7 +239,7 @@ class Line_Set:
         indel_length = 0
         indel_reason = "(WT)"
 
-        for i, m in enumerate(match_line + str("X" * (globals.PAM_RANGE_MAX * 2))):
+        for i, m in enumerate(match_line + str("X" * (glv.PAM_RANGE_MAX * 2))):
             if i < 2:
                 continue
             if i >= (len(phred_line)):
@@ -255,12 +259,12 @@ class Line_Set:
                     indel_i += 1
 
             elif p2 >= 0:
-                if indel_d == indel_i == indel_length == 1 and ((pre - globals.PAM_RANGE_MAX) < p2) and (p1 < (pre + globals.PAM_RANGE_MAX)):
-                    if (ord(phred_line[p1]) - 33) > globals.PHRED_MEANINGFUL_MIN:
+                if indel_d == indel_i == indel_length == 1 and ((pre - glv.PAM_RANGE_MAX) < p2) and (p1 < (pre + glv.PAM_RANGE_MAX)):
+                    if (ord(phred_line[p1]) - 33) > glv.PHRED_MEANINGFUL_MIN:
                         indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                         indel_reason = "Indel position confirmed by guide RNA and signal score"
                         indel_length = indel_length
-                elif ((pre - globals.PAM_RANGE_MAX) < p2) and (p1 < (pre + globals.PAM_RANGE_MAX)):
+                elif ((pre - glv.PAM_RANGE_MAX) < p2) and (p1 < (pre + glv.PAM_RANGE_MAX)):
                     indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
                     indel_reason = "Indel position confirmed by guide RNA sequence"
                     indel_length = indel_length
@@ -290,17 +294,20 @@ class Line_Set:
         if len(self) < 5:
             return 0
         a = 0
-        for c in self.match_line[globals.ERR_PADDING:-globals.ERR_PADDING]:
+        for c in self.match_line[glv.ERR_PADDING:-glv.ERR_PADDING]:
             if c == '|':
                 a += 1
-        score = a / (len(self) - 2 * globals.ERR_PADDING - self.indel_length)
+        score = a / (len(self) - 2 * glv.ERR_PADDING - self.indel_length)
 
         self.score = score
 
-        if score < (1 - globals.ERR_MAX):
+        if score < (1 - glv.ERR_MAX):
             self.indel_type = 'err'
             self.indel_reason = 'Too many mismatch and error'
         self.int_score = int((score - 1) * 1000)
+
+    def set_indel_same_type_count(self, counter_dict: dict):
+        self.indel_same_type_count = counter_dict[self.indel_type]
 
 
 class InDel_Counter_for_Ref:
@@ -308,12 +315,15 @@ class InDel_Counter_for_Ref:
     ref_name = ""
     guide_rna_name = ""
     guide_rna_seq = ""
+    count_map = {}
+    best_example_map = {}
 
     def __init__(self, ref_set: Reference):
         self.ref_name = ref_set.ref_name
         self.guide_rna_name = ref_set.guide_rna_name
         self.guide_rna_seq = ref_set.guide_rna_seq
         self.count_map = dict({'err': 0})
+        self.best_example_map = {}
 
     def __str__(self):
         genotype = self.get_genotype()
@@ -358,14 +368,44 @@ class InDel_Counter_for_Ref:
             else:
                 self.count_map[line_set.indel_type] = 1
 
+            if line_set.indel_type in self.best_example_map.keys():
+                # check the highest score, highest phred_score, largest length.
+                if self.best_example_map[line_set.indel_type].score < line_set.score:
+                    self.best_example_map[line_set.indel_type] = line_set
+                elif self.best_example_map[line_set.indel_type].score == line_set.score:
+                    if self.best_example_map[line_set.indel_type].phred_score < line_set.phred_score:
+                        self.best_example_map[line_set.indel_type] = line_set
+                    if self.best_example_map[line_set.indel_type].phred_score == line_set.phred_score:
+                        if len(self.best_example_map[line_set.indel_type]) < len(line_set):
+                            self.best_example_map[line_set.indel_type] = line_set
+            else:
+                self.best_example_map[line_set.indel_type] = line_set
+
     def get_sorted_count_map_list(self):
         sorted_count_tuple_list = list(sorted(self.count_map.items(), key=lambda k: k[1], reverse=True))
         return sorted_count_tuple_list
 
     def get_genotype(self):
-        sorted_count_tuple_list = self.\
-            get_sorted_count_map_list()
+        sorted_count_tuple_list = self.get_sorted_count_map_list()
         return Genotype(indel_counter=self, sorted_count_tuple_list=sorted_count_tuple_list)
+
+    def get_examples_text(self):
+        #
+        # best_example_map = dict{str : Line_Set}
+        sorted_best_example_tuple = sorted(self.best_example_map.items(),
+                                           key=lambda f: self.count_map[f[0]], reverse=True)
+
+        example_text = "[Best Examples for each InDel type]\n" \
+                       "\n" \
+                       "\n"
+        for key, line_set in sorted_best_example_tuple:
+            if key == 'err':
+                continue
+            example_text += f"<< {key} ({self.count_map[key]}/{self.get_len(with_err=False)}, " \
+                            f"{self.count_map[key]/self.get_len(with_err=False):.3f}, without err) >>\n" \
+                            f"{self.best_example_map[key]}\n" \
+                            f"\n"
+        return example_text
 
 
 class Genotype:

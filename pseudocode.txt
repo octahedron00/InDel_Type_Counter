@@ -10,6 +10,8 @@ class Line_Set
 
 기본 main.
 
+    reference_list = get_references_from_file()
+
 
 
     for data_file

@@ -14,54 +14,23 @@ GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 
+
 # with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
 # > total 800 nt of ref, 150 nt for a line: 40,000,000 for a second.
 
 
-def get_best_line_set(read: SeqIO.SeqRecord, reference_list: list):
-    if len(reference_list) == 0:
+def get_best_line_set(read: SeqIO.SeqRecord, ref_set_list: list):
+    if len(ref_set_list) == 0:
         return None
-    best_line_set = Line_Set(read_raw=read, ref_set=reference_list[0])
+    best_line_set = Line_Set(read_raw=read, ref_set=ref_set_list[0])
 
-    for ref_set in reference_list:
+    for ref_set in ref_set_list:
         test_line_set = Line_Set(read_raw=read, ref_set=ref_set)
 
         if test_line_set.score > best_line_set.score:
             best_line_set = test_line_set
 
     return best_line_set
-
-
-def get_reference_list_from_file():
-    # Get reference and guide RNA sequences,
-    # and match them as a 'Reference' class
-
-    reference_list = []
-
-    ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
-    ref_raw_list = []
-    for item in ref_raw_iter:
-        ref_raw_list.append(item)
-
-    g_rna_seq_iter = SeqIO.parse(GUIDE_RNA_SET_ADDRESS, "fasta")
-    g_rna_raw_list = []
-    for item in g_rna_seq_iter:
-        g_rna_raw_list.append(item)
-
-    for i, ref_raw in enumerate(ref_raw_list):
-        if i >= len(g_rna_raw_list):
-            i = len(g_rna_raw_list) - 1
-        ref_set = Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
-        reference_list.append(ref_set)
-
-    return reference_list
-
-
-def get_file_address_list():
-    address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
-                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
-    address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
-    return address_list
 
 
 @click.command()
@@ -100,26 +69,46 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
     glv.TASK_TITLE = task_title
     glv.OPEN_XLSX_AUTO = open_xlsx_auto
 
-    # Get sorted file address list from a folder, list[str]
-    address_list = get_file_address_list()
+    #
+    # Get addresses of files from fixed file location, and sort
+    address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
+                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
+    address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
     print("File list:", address_list)
     print()
 
-    # get a list[Reference]
-    reference_list = get_reference_list_from_file()
+    #
+    # Get reference and guide RNA sequences,
+    # and match them as a 'Reference' class
+    ref_raw_iter = SeqIO.parse(REF_SET_ADDRESS, "fasta")
+    ref_raw_list = []
+    for item in ref_raw_iter:
+        ref_raw_list.append(item)
+
+    g_rna_seq_iter = SeqIO.parse(GUIDE_RNA_SET_ADDRESS, "fasta")
+    g_rna_raw_list = []
+    for item in g_rna_seq_iter:
+        g_rna_raw_list.append(item)
+
+    ref_set_list = []
+    for i, ref_raw in enumerate(ref_raw_list):
+        if i >= len(g_rna_raw_list):
+            i = len(g_rna_raw_list) - 1
+        ref_set = Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
+        ref_set_list.append(ref_set)
 
     #
     # for total result, making list[list[InDel_Counter]]
     all_indel_counter_list_list = []
 
     #
-    # for counting expected time left, count total number of reads.
+    # for counting expected time left, count total number of reads
     total_reads_count = 0
     for i, file_name in enumerate(address_list):
-        print(f"\r({i+1}/{len(address_list)}) reading {file_name}", end="")
+        print(f"\r({i + 1}/{len(address_list)}) reading {file_name}", end="")
 
         read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
-        for _ in read_raw_iter:
+        for item in read_raw_iter:
             total_reads_count += 1
     print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files")
     print()
@@ -135,7 +124,7 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
         '''
         For each file, This happens:
             get a list of 'reads' from file (NGS-fastq only),
-            
+
             for each read:
                 for each reference:
                     (make line_set from 1 read and 1 reference)
@@ -144,22 +133,22 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
                     get the position of guide_RNA and PAM sequence,
                     get the indel type by checking around the PAM starting point,
                     get the score(mismatch ratio without main indel) and check if it is error seq or not.
-                
+
                 pick the best aligned line_set by score, 
                 and add it to the list.
-                
+
             for each line_set in list:
                 for each indel_counter in list:
                     if line_set.ref == indel_counter.ref:
                         indel_counter.count(line_set) < count the each indel type
-                
-            
-        
+
+
+
         '''
 
         start_time_for_file = datetime.datetime.now()
         indel_counter_list = []
-        for ref_set in reference_list:
+        for ref_set in ref_set_list:
             indel_counter = InDel_Counter_for_Ref(ref_set=ref_set)
             indel_counter.set_file_name(file_name=file_name)
             indel_counter_list.append(indel_counter)
@@ -180,12 +169,12 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
             # This will show the update at about every 0.3 seconds
             if (i % 100) == 0:
                 print(f"\r({file_no + 1}/{len(address_list)}) "
-                      f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
-                      f"remaining: {(delta_time/finish_reads_count)*(total_reads_count-finish_reads_count)} "
-                      f"(for this file: {(delta_time/finish_reads_count)*(len(read_raw_list)-(i+1))}) "
+                      f"for {file_name}: {((i + 1) / len(read_raw_list)):.3f} / "
+                      f"remaining: {(delta_time / finish_reads_count) * (total_reads_count - finish_reads_count)} "
+                      f"(for this file: {(delta_time / finish_reads_count) * (len(read_raw_list) - (i + 1))}) "
                       f"(length: {len(read_raw_list)})", end="")
 
-            best_line_set = get_best_line_set(read_raw, reference_list)
+            best_line_set = get_best_line_set(read_raw, ref_set_list)
             best_line_set.set_file_name(file_name=file_name)
 
             line_set_list.append(best_line_set)
@@ -224,7 +213,7 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
               f"(length: {len(line_set_list)})")
 
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
-    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, reference_list=reference_list)
+    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
     if glv.OPEN_XLSX_AUTO:
@@ -232,7 +221,7 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
 
 
 if __name__ == '__main__':
-    print("InDel Type Counter ver. "+glv.VERSION)
+    print("InDel Type Counter, for TESTING ver. " + glv.VERSION)
     print()
     main()
     print("Things never works below here... << error message")
