@@ -33,6 +33,7 @@ def get_align_matrix_for_subsequence_positioning():
     return matrix
 
 
+# for txt log
 def get_text_of_global_variables():
     txt = f"" \
           f"ERR_MAX: {ERR_MAX}\n" \
@@ -44,6 +45,7 @@ def get_text_of_global_variables():
     return txt
 
 
+# for csv, xlsx log
 def get_row_of_global_variables():
     row = [["ERR_MAX", ERR_MAX, "ERR_PADDING", ERR_PADDING],
            ["PAM_RANGE_MAX", PAM_RANGE_MAX, "PHRED_MEANINGFUL_SCORE_MIN", PHRED_MEANINGFUL_MIN],

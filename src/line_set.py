@@ -1,13 +1,13 @@
 from Bio.Align import PairwiseAligner, substitution_matrices
 from Bio import SeqIO
+
+# Variables for uh... making the results:
+# Can be changed by command line interface; All in globals.py
 import src.globals as glv
 
 # Variables for letter recognition
 MATCH_LETTER = ('|', 'x', '+', '\\', '/', '.')
 MATCH_ERR_LETTER = MATCH_LETTER[1:]
-
-# Variables for uh... making the results:
-# Can be changed by command line interface; All in globals.py
 
 # Variables for validation
 HOMO_RATIO_MIN = 0.8
@@ -18,6 +18,16 @@ READ_MIN = 30
 
 
 class Reference:
+    '''
+    class Reference
+    a set of reference for alignment and indel validation.
+
+    The class has:
+        a reference sequence to align,
+        a guide_RNA (spacer) sequence to validate the main indels,
+        a name for both sequence to show.
+    '''
+
     ref_raw = None
     ref_seq = ""
     ref_name = ""
@@ -37,24 +47,61 @@ class Reference:
         return len(self.ref_seq)
 
     def __str__(self):
-        if len(self.ref_seq) < 30:
-            return f"<Class Reference>\n" \
-                   f"ref_raw: {self.ref_raw}\n" \
-                   f"ref_seq: {self.ref_seq}\n" \
-                   f"ref_name: {self.ref_name}\n" \
-                   f"guide_rna_raw: {self.guide_rna_raw}\n" \
-                   f"guide_rna_seq: {self.guide_rna_seq}\n" \
-                   f"guide_rna_name: {self.guide_rna_name}\n"
+        ref_seq_for_print = self.ref_seq
+        if len(ref_seq_for_print) < 30:
+            ref_seq_for_print = ref_seq_for_print[:20] + "..." + ref_seq_for_print[-5:]
 
         return f"<Class Reference>\n" \
                f"ref_raw: {self.ref_raw}\n" \
-               f"ref_seq: {self.ref_seq[:20]}...{self.ref_seq[-5:]}\n" \
+               f"ref_seq: {ref_seq_for_print}\n" \
+               f"ref_name: {self.ref_name}\n" \
                f"guide_rna_raw: {self.guide_rna_raw}\n" \
                f"guide_rna_seq: {self.guide_rna_seq}\n" \
                f"guide_rna_name: {self.guide_rna_name}\n"
 
 
 class Line_Set:
+    '''
+    class Line_Set
+    a set of line(sequence and string) to show the alignment and indel type,
+        with a validated indel type.
+
+    The class has:
+        name of reference and read(id with number from sequencer), guide_RNA
+            to calculate / show / debug,
+
+        ref(erence)_line
+        read_line
+        match_line
+            which are aligned & trimmed to show the mismatch and indel.
+        pos(ition)_line
+            to show the position of guide_RNA with '>',
+            and the possible PAM sequence with '<'.
+        phred_line
+            aligned to show the signal strength(score) of each NT of read,
+
+        cut_pos(ition)
+            a starting point of PAM sequence: starting position to look forward.
+        indel_type
+        indel_reason
+            which are set by calculation,
+        indel_length
+            for the calculation of the score, like...
+            2I2D means two mismatch, but the indel_length is 2
+
+        score
+            calculated by the perfect match rate, without the main indel mismatch.
+        int_score
+            (score-1) * 1000 : <more big 'minus' value means more error>
+        phred_score
+            average phred score value, 'the quality' of the read.
+            all score is used to find the best line_set,
+            to check the best reference for a Read to match, and
+            to get the best line set for an InDel_Type
+
+
+    '''
+
     ref_set = None
     pos_line = ""
     ref_line = ""
@@ -73,6 +120,8 @@ class Line_Set:
     indel_length = 0
     indel_reason = ""
     cut_pos = 0
+
+    # # only for the beauty of the log
     indel_same_type_count = 0
 
     score = 0
@@ -115,23 +164,37 @@ class Line_Set:
                f"readline: {self.read_line}\n" \
                f"phred   : {self.phred_line}\n"
 
+    # # only for the beauty of the sub-log
+    def get_str_simple(self):
+        return f"| read: {self.read_name}\t /score: {self.int_score}\n" \
+               f"| indel: {self.indel_type}\t /reason: \"{self.indel_reason}\"\n" \
+               f"| position: {self.pos_line}\n" \
+               f"| ref_line: {self.ref_line}\n" \
+               f"| match   : {self.match_line}\n" \
+               f"| readline: {self.read_line}\n" \
+               f"L phred   : {self.phred_line}\n"
+
     def set_file_name(self, file_name: str):
         self.file_name = file_name
 
     def _set_align_line_set(self, ref_seq, read_seq):
+        # 'X' means that the read must be between the reference
+        # = Aligning the subsequence in the sequence
         ref_seq = "X" + ref_seq + "X"
 
+        # align with the pre-set global variables for alignments.
         aligner = PairwiseAligner()
         matrix = substitution_matrices.Array(data=glv.get_align_matrix_for_subsequence_positioning())
         aligner.substitution_matrix = matrix
         aligner.open_gap_score = glv.GAP_OPEN
         aligner.extend_gap_score = glv.GAP_EXTEND
-
         alignments = aligner.align(ref_seq, read_seq)
 
+        # get the untrimmed alignment result, based on the reference sequence
         ref_line_untrimmed = alignments[0][0]
         read_line_untrimmed = alignments[0][1]
 
+        # trim the sequence, and build the match_line
         ref_line = match_line = read_line = ""
         count_base = 0
         for i, c in enumerate(read_line_untrimmed):
@@ -151,6 +214,7 @@ class Line_Set:
                 match_line += '|'
             else:
                 match_line += '.'
+
 
         self.ref_line = ref_line
         self.match_line = match_line
@@ -403,7 +467,7 @@ class InDel_Counter_for_Ref:
                 continue
             example_text += f"<< {key} ({self.count_map[key]}/{self.get_len(with_err=False)}, " \
                             f"{self.count_map[key]/self.get_len(with_err=False):.3f}, without err) >>\n" \
-                            f"{self.best_example_map[key]}\n" \
+                            f"{line_set.get_str_simple()}\n" \
                             f"\n"
         return example_text
 

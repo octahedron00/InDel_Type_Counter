@@ -1,6 +1,18 @@
 pseudocode for total.
 
 
+Dependencies:
+    Bio
+        Align: for align
+        SeqIO: for reading fasta / fastq files
+
+    click
+        for command line interface working.
+        only works in the main
+
+    csv, xlsxwriter
+        for writing excel-type log file
+
 
 class Line_Set
     내부 데이터들 넣어주기.

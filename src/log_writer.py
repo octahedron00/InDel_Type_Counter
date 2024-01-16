@@ -37,6 +37,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    "----------------------\n")
 
     file_log.write("[Raw Data]\n"
+                   "\n"
                    "\n")
 
     for line_set in line_set_list:

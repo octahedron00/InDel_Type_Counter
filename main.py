@@ -64,6 +64,19 @@ def get_file_address_list():
     return address_list
 
 
+def get_total_number_of_reads(address_list: list[str]):
+    total_reads_count = 0
+    for i, file_name in enumerate(address_list):
+        print(f"\r({i + 1}/{len(address_list)}) reading {file_name}", end="")
+
+        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+        for _ in read_raw_iter:
+            total_reads_count += 1
+    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files")
+    print()
+    return total_reads_count
+
+
 @click.command()
 @click.option('-e', '--err_max', default=0.03,
               help="The threshold of mismatch ratio in aligned line set, without the main indel.")
@@ -79,15 +92,14 @@ def get_file_address_list():
 @click.option('--score_mismatch', default=-1,
               help="Score for align: for Mismatch")
 @click.option('--score_gap_open', default=-50,
-              help="Score for align: for Gap Open; low penalty will make fake indels more often")
+              help="Score for align: for Gap Open; low penalty for 'gaps' will make fake indels more often")
 @click.option('--score_gap_extend', default=-4,
-              help="Score for align: for Gap Extension; low penalty will make fake indels more often")
+              help="Score for align: for Gap Extension; low penalty for 'gaps' will make fake indels more often")
 @click.option('-t', '--task_title', default="Task at " + str(datetime.datetime.now()), help="Title for this task")
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help="Open the excel log file automatically if finished")
 def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
          score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
-    #
     # set global variables
     glv.ERR_MAX = err_max
     glv.PAM_RANGE_MAX = pam_range_max
@@ -108,27 +120,16 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
     # get a list[Reference]
     reference_list = get_reference_list_from_file()
 
-    #
     # for total result, making list[list[InDel_Counter]]
     all_indel_counter_list_list = []
 
-    #
-    # for counting expected time left, count total number of reads.
-    total_reads_count = 0
-    for i, file_name in enumerate(address_list):
-        print(f"\r({i+1}/{len(address_list)}) reading {file_name}", end="")
-
-        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
-        for _ in read_raw_iter:
-            total_reads_count += 1
-    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files")
-    print()
-
-    #
-    # for counting expected time left, count total number of finished number of reads
+    # # # for counting expected time left,
+    # # # count total number of reads,
+    # # # count total number of finished number of reads,
+    # # # and check the time of initiation
+    '''This function will make a text print: opening large file takes some time'''
+    total_reads_count = get_total_number_of_reads(address_list=address_list)
     finish_reads_count = 0
-
-    # for counting expected time left, check the time of start
     start_time = datetime.datetime.now()
 
     for file_no, file_name in enumerate(address_list):
@@ -156,29 +157,29 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
             
         
         '''
-
+        # # # for counting expected time left
         start_time_for_file = datetime.datetime.now()
+
+        # build list[InDel_Counter_For_Ref]
         indel_counter_list = []
-        for ref_set in reference_list:
-            indel_counter = InDel_Counter_for_Ref(ref_set=ref_set)
+        for reference in reference_list:
+            indel_counter = InDel_Counter_for_Ref(ref_set=reference)
             indel_counter.set_file_name(file_name=file_name)
             indel_counter_list.append(indel_counter)
 
+        # build list[Bio.SeqRecord]
         read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+        read_raw_list = [read_raw for read_raw in read_raw_iter]
 
-        read_raw_list = []
-        for item in read_raw_iter:
-            read_raw_list.append(item)
-
+        # build list[Line_Set]
         line_set_list = []
         for i, read_raw in enumerate(read_raw_list):
-            finish_reads_count += 1
-            now_time = datetime.datetime.now()
-            delta_time = now_time - start_time
 
-            # to prevent print function's time delay problem:
-            # This will show the update at about every 0.3 seconds
+            # # # for showing expected time left
+            finish_reads_count += 1
             if (i % 100) == 0:
+                now_time = datetime.datetime.now()
+                delta_time = now_time - start_time
                 print(f"\r({file_no + 1}/{len(address_list)}) "
                       f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
                       f"remaining: {(delta_time/finish_reads_count)*(total_reads_count-finish_reads_count)} "
@@ -190,43 +191,59 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
 
             line_set_list.append(best_line_set)
 
+        # # # for showing expected time left / while log writing
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / "
               f"Writing log files (length: {len(line_set_list)})", end="")
 
+        # count the number of each indel type,
+        # also setting the best line_set for each indel type happens here
         for line_set in line_set_list:
             for indel_counter in indel_counter_list:
                 if indel_counter.ref_name == line_set.ref_name:
                     indel_counter.count(line_set)
 
+        # # save the indel type count to each line set
+        # # just for the log file
         for line_set in line_set_list:
             for indel_counter in indel_counter_list:
                 if indel_counter.ref_name == line_set.ref_name:
                     line_set.set_indel_same_type_count(indel_counter.count_map)
 
-        # Sorting Line Set List.
+        # add the file result to the total result
+        all_indel_counter_list_list.append(indel_counter_list)
+
+        # # Sorting Line Set List!
+        # # err for the last / biggest indel type first / higher score / higher phred score / longer one first
+        # # just for the log file
         indel_counter_map = {}
         for indel_counter in indel_counter_list:
             indel_counter_map[indel_counter.ref_name] = indel_counter
         line_set_list.sort(key=lambda l: len(l))
+        line_set_list.sort(key=lambda l: l.phred_score, reverse=True)
+        line_set_list.sort(key=lambda l: l.score, reverse=True)
         line_set_list.sort(key=lambda l: indel_counter_map[l.ref_name].count_map[l.indel_type], reverse=True)
         line_set_list.sort(key=lambda l: l.indel_type == 'err')
 
-        # writing sub log
+        # Writing sub log
         for indel_counter in indel_counter_list:
             write_sub_log(line_set_list=[l for l in line_set_list if l.ref_name == indel_counter.ref_name],
                           indel_counter=indel_counter, file_name=file_name)
 
-        # finish: add it to the list, end time calc, print.
-        all_indel_counter_list_list.append(indel_counter_list)
+        # # for showing time used
         end_time_for_file = datetime.datetime.now()
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})")
+        # end.
 
+    # Writing total log
     write_main_log(indel_counter_list_list=all_indel_counter_list_list)
-    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, reference_list=reference_list)
+    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=reference_list)
 
+    # # for showing time used
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
+
+    #
     if glv.OPEN_XLSX_AUTO:
         os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
 
@@ -235,6 +252,8 @@ if __name__ == '__main__':
     print("InDel Type Counter ver. "+glv.VERSION)
     print()
     main()
+
+    # this is how 'click' works...
     print("Things never works below here... << error message")
 
 

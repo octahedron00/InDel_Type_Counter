@@ -120,6 +120,9 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
     # for counting expected time left, check the time of start
     start_time = datetime.datetime.now()
 
+    counting_errors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    average_phred_score = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
     for file_no, file_name in enumerate(address_list):
         '''
         For each file, This happens:
@@ -145,7 +148,6 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
 
 
         '''
-
         start_time_for_file = datetime.datetime.now()
         indel_counter_list = []
         for ref_set in ref_set_list:
@@ -180,7 +182,7 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
             line_set_list.append(best_line_set)
 
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / "
-              f"Writing log files (length: {len(line_set_list)})", end="")
+              f"Testing (length: {len(line_set_list)})", end="")
 
         for line_set in line_set_list:
             for indel_counter in indel_counter_list:
@@ -192,32 +194,27 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
                 if indel_counter.ref_name == line_set.ref_name:
                     line_set.set_indel_same_type_count(indel_counter.count_map)
 
-        # Sorting Line Set List.
-        indel_counter_map = {}
-        for indel_counter in indel_counter_list:
-            indel_counter_map[indel_counter.ref_name] = indel_counter
-        line_set_list.sort(key=lambda l: len(l))
-        line_set_list.sort(key=lambda l: indel_counter_map[l.ref_name].count_map[l.indel_type], reverse=True)
-        line_set_list.sort(key=lambda l: l.indel_type == 'err')
-
-        # writing sub log
-        for indel_counter in indel_counter_list:
-            write_sub_log(line_set_list=[l for l in line_set_list if l.ref_name == indel_counter.ref_name],
-                          indel_counter=indel_counter, file_name=file_name)
+        for line_set in line_set_list:
+            match_line = line_set.match_line
+            phred_line = line_set.phred_line
+            for i in range(-10, 10):
+                if match_line[i] != '|':
+                    counting_errors[i] += 1
+                average_phred_score[i] += (ord(phred_line[i])-33)
 
         # finish: add it to the list, end time calc, print.
         all_indel_counter_list_list.append(indel_counter_list)
         end_time_for_file = datetime.datetime.now()
-        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
+        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Testing / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})")
 
-    write_main_log(indel_counter_list_list=all_indel_counter_list_list)
-    write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=ref_set_list)
+        print(finish_reads_count, counting_errors)
+        print(finish_reads_count, average_phred_score)
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
-    if glv.OPEN_XLSX_AUTO:
-        os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
+    print(total_reads_count, counting_errors)
+    print(total_reads_count, average_phred_score)
 
 
 if __name__ == '__main__':
