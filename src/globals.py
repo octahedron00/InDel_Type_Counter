@@ -34,7 +34,7 @@ EXPLANATION_MAP['cut_pos_radius'] = "The indel within this radius from the estim
 PAM_DISTANCE_MAX = 5
 PHRED_MEANINGFUL_MIN = 30
 EXPLANATION_MAP['pam_distance_max'] = "The max distance of PAM sequence from guide RNA sequence"
-EXPLANATION_MAP['phred_meaningful_min'] = "One mismatch will be shown as '1I1D', " \
+EXPLANATION_MAP['phred_meaningful_score_min'] = "One mismatch will be shown as '1I1D', " \
                                           "only if the NT's phred score is higher than this; " \
                                           "For ignoring all 'one mismatch', make it higher than 100"
 
@@ -70,8 +70,10 @@ def get_text_of_global_variables():
     txt = f"" \
           f"ERR_RATIO_MAX: {ERR_RATIO_MAX}\n" \
           f"ERR_PADDING_FOR_SEQ: {ERR_PADDING_FOR_SEQ}\n" \
-          f"PAM_DISTANCE_MAX: {PAM_DISTANCE_MAX}\n" \
+          f"CUT_POS_FROM_PAM: {CUT_POS_FROM_PAM}\n" \
+          f"CUT_POS_RADIUS: {CUT_POS_RADIUS}\n" \
           f"PHRED_MEANINGFUL_SCORE_MIN: {PHRED_MEANINGFUL_MIN}\n" \
+          f"PAM_DISTANCE_MAX: {PAM_DISTANCE_MAX}\n" \
           f"SCORE_MATCH: {MAT} / SCORE_MISMATCH: {MIS}\n" \
           f"SCORE_GAP_OPEN: {GAP_OPEN} / SCORE_GAP_EXTEND: {GAP_EXTEND}\n"
     return txt
@@ -80,7 +82,8 @@ def get_text_of_global_variables():
 # for csv, xlsx log
 def get_row_of_global_variables():
     row = [["ERR_RATIO_MAX", ERR_RATIO_MAX, "ERR_PADDING_FOR_SEQ", ERR_PADDING_FOR_SEQ],
-           ["PAM_DISTANCE_MAX", PAM_DISTANCE_MAX, "PHRED_MEANINGFUL_SCORE_MIN", PHRED_MEANINGFUL_MIN],
+           ["CUT_POS_FROM_PAM", CUT_POS_FROM_PAM, "CUT_POS_RADIUS", CUT_POS_RADIUS],
+           ["PHRED_MEANINGFUL_SCORE_MIN", PHRED_MEANINGFUL_MIN, "PAM_DISTANCE_MAX", PAM_DISTANCE_MAX],
            ["SCORE_MATCH", MAT, "SCORE_MISMATCH", MIS],
            ["SCORE_GAP_OPEN,", GAP_OPEN, "SCORE_GAP_EXTEND", GAP_EXTEND]]
     return row

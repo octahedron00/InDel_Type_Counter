@@ -2,7 +2,9 @@ import datetime
 import csv
 from xlsxwriter.workbook import Workbook
 
-from src.line_set import InDel_Counter_for_Ref, Line_Set, Reference
+from src.line_set import Line_Set
+from src.reference import Reference
+from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
 import src.globals as glv
 
 SUB_LOG_ADDRESS = "./log/"
@@ -13,7 +15,7 @@ CSV_LOG_NAME = "./count_result.csv"
 XLSX_LOG_NAME = "./count_result.xlsx"
 
 
-def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Ref, file_name: str):
+def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
     file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
 
     file_log.write(f""
@@ -49,7 +51,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
     file_log.close()
 
 
-def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]]):
+def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
 
     file_log = open("../Count_result.txt", "w")
 
@@ -74,7 +76,7 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]]):
     file_log.close()
 
 
-def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Ref]], ref_set_list: list[Reference]):
+def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], ref_set_list: list[Reference]):
 
     file_csv = open(CSV_LOG_NAME, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)

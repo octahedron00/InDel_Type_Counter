@@ -5,7 +5,9 @@ import os
 import click
 from Bio import SeqIO
 
-from src.line_set import Line_Set, Reference, InDel_Counter_for_Ref
+from src.reference import Reference
+from src.line_set import Line_Set
+from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
 from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
 import src.globals as glv
 
@@ -104,7 +106,8 @@ def get_total_number_of_reads(address_list: list[str]):
               help=glv.EXPLANATION_MAP['task_title'])
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
-def main(err_ratio_max, err_padding_for_seq, pam_distance_max, phred_meaningful_score_min,
+def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
+         pam_distance_max, phred_meaningful_score_min,
          score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
     # set global variables
     glv.ERR_RATIO_MAX = err_ratio_max
@@ -169,7 +172,7 @@ def main(err_ratio_max, err_padding_for_seq, pam_distance_max, phred_meaningful_
         # build list[InDel_Counter_For_Ref]
         indel_counter_list = []
         for reference in reference_list:
-            indel_counter = InDel_Counter_for_Ref(ref_set=reference)
+            indel_counter = InDel_Counter_for_Genotype(ref_set=reference)
             indel_counter.set_file_name(file_name=file_name)
             indel_counter_list.append(indel_counter)
 
