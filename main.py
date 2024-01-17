@@ -74,7 +74,7 @@ def get_total_number_of_reads(address_list: list[str]):
         read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
         for _ in read_raw_iter:
             total_reads_count += 1
-    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files")
+    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files                     ")
     print()
     return total_reads_count
 
@@ -95,10 +95,10 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.option('-r', '--cut_pos_radius', default=3,
               help=glv.EXPLANATION_MAP['cut_pos_radius'])
 #
-@click.option('-d', '--pam_distance_max', default=5,
-              help=glv.EXPLANATION_MAP['pam_distance_max'])
 @click.option('-s', '--phred_meaningful_score_min', default=30,
               help=glv.EXPLANATION_MAP['phred_meaningful_score_min'])
+@click.option('-d', '--pam_distance_max', default=5,
+              help=glv.EXPLANATION_MAP['pam_distance_max'])
 @click.option('--score_match', default=2,
               help=glv.EXPLANATION_MAP['score_match'])
 @click.option('--score_mismatch', default=-1,
@@ -113,17 +113,22 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
 def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
-         pam_distance_max, phred_meaningful_score_min,
+         phred_meaningful_score_min, pam_distance_max,
          score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
     # set global variables
     glv.ERR_RATIO_MAX = err_ratio_max
-    glv.PAM_DISTANCE_MAX = pam_distance_max
     glv.ERR_PADDING_FOR_SEQ = err_padding_for_seq
+    glv.CUT_POS_FROM_PAM = cut_pos_from_pam
+    glv.CUT_POS_RADIUS = cut_pos_radius
+
     glv.PHRED_MEANINGFUL_MIN = phred_meaningful_score_min
+    glv.PAM_DISTANCE_MAX = pam_distance_max
+
     glv.MAT = score_match
     glv.MIS = score_mismatch
     glv.GAP_OPEN = score_gap_open
     glv.GAP_EXTEND = score_gap_extend
+
     glv.TASK_TITLE = task_title
     glv.OPEN_XLSX_AUTO = open_xlsx_auto
 
