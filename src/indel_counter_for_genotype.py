@@ -123,6 +123,13 @@ class InDel_Counter_for_Genotype:
 
     def get_simple_example_text(self):
 
+        genotype = self.get_genotype()
+        text = f"for {self.ref_name} in {self.file_name}: \n" \
+               f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
+               f"\n" \
+               f"[Result] \n" \
+               f"{genotype}\n"
+
         wt_seq = ""
         wt_pos = ""
 
@@ -131,8 +138,8 @@ class InDel_Counter_for_Genotype:
         sorted_best_example_tuple = sorted(self.best_example_map.items(),
                                            key=lambda f: self.count_map[f[0]], reverse=True)
 
-        if self.get_genotype().name == 'err' or len(sorted_best_example_tuple) < 2:
-            return ""
+        if genotype.name == 'err' or len(sorted_best_example_tuple) < 2:
+            return text
 
         key, line_set = sorted_best_example_tuple[0]
         if key == 'err':
@@ -178,17 +185,10 @@ class InDel_Counter_for_Genotype:
                                                    sample_set[key]["read_line"][i+1:]
             i += 1
 
-        genotype = self.get_genotype()
-
-        text = f"for {self.ref_name} in {self.file_name}: \n" \
-               f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
-               f"\n" \
-               f"[Result] \n" \
-               f"{genotype}\n" \
-               f"\n" \
-               f"{wt_pos}\n" \
-               f"{wt_seq} : WT      Total without err: {self.get_len(with_err=False)}\n" \
-               f"\n"
+        text += f"\n" \
+                f"{wt_pos}\n" \
+                f"{wt_seq} : WT      Total without err: {self.get_len(with_err=False)}\n" \
+                f"\n"
         for key in sample_set.keys():
             text += f"{sample_set[key]['read_line']} : {key:<8}" \
                     f"({self.count_map[key]:>5}/{self.get_len(with_err=False):}, " \
@@ -196,7 +196,7 @@ class InDel_Counter_for_Genotype:
 
         text += f"\n"
         text += f"{'-'*len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
-                f"{self.count_map['err']/(self.get_len(with_err=True)+Z):.3f})"
+                f"{self.count_map['err']/(self.get_len(with_err=True)+Z):.3f})\n"
         return text
 
 
