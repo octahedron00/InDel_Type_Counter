@@ -219,9 +219,9 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
             pos_line += ' '
 
         if (cut_pos - glv.CUT_POS_RADIUS) <= i < cut_pos:
-            selected_area_line += '('
+            selected_area_line += '['
         elif cut_pos <= i < (cut_pos + glv.CUT_POS_RADIUS):
-            selected_area_line += ')'
+            selected_area_line += ']'
         else:
             selected_area_line += ' '
 
