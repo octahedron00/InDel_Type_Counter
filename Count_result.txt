@@ -1,7 +1,7 @@
 # <InDel_Type_Counter 1.1.1 Main Log>
-# Log at 2024-01-17 21:55:35.705877 (UTC 9:00:00)
+# Log at 2024-01-17 21:58:11.697068 (UTC 9:00:00)
 # 
-# Task Title: Task at 2024-01-17 21:51:33.870036
+# Task Title: Task at 2024-01-17 21:54:08.455380
 
 ERR_RATIO_MAX: 0.03
 ERR_PADDING_FOR_SEQ: 1

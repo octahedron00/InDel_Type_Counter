@@ -339,7 +339,7 @@ class Genotype:
                      f"(sum: {(self.allele1_ratio + self.allele2_ratio):.3f})"
         else:
             string = f"{self.name}({self.allele_set_shape}) of " \
-                     f"{self.allele1_name}({self.allele1_ratio} without err)"
+                     f"{self.allele1_name}({self.allele1_ratio:.3f} without err)"
         if len(self.warning) > 0:
             string += "\n"
             string += self.warning
