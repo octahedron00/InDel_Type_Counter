@@ -8,6 +8,9 @@ THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
 READ_MIN = 30
 
+# Variables for showing awesome simple result!
+MARGIN_FOR_SAMPLE = 5
+
 # Variables for uh... zero division
 Z = 0.000000001
 
@@ -117,6 +120,119 @@ class InDel_Counter_for_Genotype:
                             f"{line_set.get_str_simple()}\n" \
                             f"\n"
         return example_text
+
+    def get_simple_example_text(self):
+
+        wt_seq = ""
+        wt_pos = ""
+
+        sample_set = {}
+
+        sorted_best_example_tuple = sorted(self.best_example_map.items(),
+                                           key=lambda f: self.count_map[f[0]], reverse=True)
+
+        if self.get_genotype().name == 'err' or len(sorted_best_example_tuple) < 2:
+            return ""
+
+        key, line_set = sorted_best_example_tuple[0]
+        if key == 'err':
+            key, line_set = sorted_best_example_tuple[1]
+
+        wt_set = get_simple_example_set(line_set=line_set)
+        wt_basic = wt_set["ref_line"]
+        pos_basic = wt_set["pos_line"]
+
+        for i, a in enumerate(wt_basic):
+            if a == '-':
+                continue
+            wt_seq += a
+            wt_pos += pos_basic[i]
+
+        for key, line_set in sorted_best_example_tuple:
+            if key == 'err':
+                continue
+            sample_set[key] = get_simple_example_set(line_set)
+
+        i = 0
+        while i < len(wt_seq):
+            is_added = False
+            for key in sample_set.keys():
+                if sample_set[key]["ref_line"][i] == '-':
+                    is_added = True
+            if is_added:
+                wt_seq = wt_seq[:i] + ' ' + wt_seq[i:]
+                wt_pos = wt_pos[:i] + ' ' + wt_pos[i:]
+                for key in sample_set.keys():
+                    if sample_set[key]["ref_line"][i] == '-':
+                        continue
+                    sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][i:]
+                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + ' ' + sample_set[key]["read_line"][i:]
+                    sample_set[key]["match_line"] = sample_set[key]["match_line"][:i] + ' ' + sample_set[key]["match_line"][i:]
+                    sample_set[key]["pos_line"] = sample_set[key]["pos_line"][:i] + ' ' + sample_set[key]["pos_line"][i:]
+            else:
+                for key in sample_set.keys():
+                    if sample_set[key]["match_line"][i] == '|':
+                        continue
+                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
+                                                   sample_set[key]["read_line"][i].lower() + \
+                                                   sample_set[key]["read_line"][i+1:]
+            i += 1
+
+        genotype = self.get_genotype()
+
+        text = f"for {self.ref_name} in {self.file_name}: \n" \
+               f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
+               f"\n" \
+               f"[Result] \n" \
+               f"{genotype}\n" \
+               f"\n" \
+               f"{wt_pos}\n" \
+               f"{wt_seq} : WT      Total without err: {self.get_len(with_err=False)}\n" \
+               f"\n"
+        for key in sample_set.keys():
+            text += f"{sample_set[key]['read_line']} : {key:<8}" \
+                    f"({self.count_map[key]:>5}/{self.get_len(with_err=False):}, " \
+                    f"{self.count_map[key]/(self.get_len(with_err=False)+Z):.3f})\n"
+
+        text += f"\n"
+        text += f"{'-'*len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
+                f"{self.count_map['err']/(self.get_len(with_err=True)+Z):.3f})"
+        return text
+
+
+def get_simple_example_set(line_set: Line_Set):
+    std_pos = line_set.std_pos
+    rna_pos = line_set.rna_pos
+
+    pam_len = 3
+    rna_len = len(line_set.guide_rna_seq)
+
+    ins_up = 0
+    for i in range(rna_pos - rna_len, rna_pos - rna_len - MARGIN_FOR_SAMPLE, -1):
+        while line_set.ref_line[i - ins_up] == '-':
+            ins_up += 1
+    ins_down = 0
+    for i in range(rna_pos - rna_len + 1, std_pos + pam_len + MARGIN_FOR_SAMPLE, 1):
+        while line_set.ref_line[i + ins_down] == '-':
+            ins_down += 1
+
+    simple_ref_line = line_set.ref_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                                        (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
+
+    simple_read_line = line_set.read_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                                          (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
+
+    simple_match_line = line_set.match_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                                            (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
+
+    simple_pos_line = line_set.pos_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                                        (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
+
+    return {"ref_line": simple_ref_line,
+            "read_line": simple_read_line,
+            "match_line": simple_match_line,
+            "pos_line": simple_pos_line,
+            'k': 0}
 
 
 class Genotype:

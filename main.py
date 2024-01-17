@@ -92,7 +92,7 @@ def key_for_sorting_err(line_set: Line_Set):
               help=glv.EXPLANATION_MAP['err_padding_for_seq'])
 @click.option('-x', '--cut_pos_from_pam', default=-3,
               help=glv.EXPLANATION_MAP['cut_pos_from_pam'])
-@click.option('-r', '--cut_pos_radius', default=3,
+@click.option('-r', '--cut_pos_radius', default=5,
               help=glv.EXPLANATION_MAP['cut_pos_radius'])
 #
 @click.option('-s', '--phred_meaningful_score_min', default=30,

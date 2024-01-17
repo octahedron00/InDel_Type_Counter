@@ -1,8 +1,8 @@
-<InDel_Type_Counter 1.0.2 Main Log>
-Log at 2024-01-17 15:16:42.672481 (UTC 9:00:00)
-Task Title,Task at 2024-01-17 15:13:08.870115
+<InDel_Type_Counter 1.1.0 Main Log>
+Log at 2024-01-17 19:19:06.708665 (UTC 9:00:00)
+Task Title,Task at 2024-01-17 19:18:12.253042
 ERR_RATIO_MAX,0.03,ERR_PADDING_FOR_SEQ,1
-CUT_POS_FROM_PAM,-3,CUT_POS_RADIUS,3
+CUT_POS_FROM_PAM,-3,CUT_POS_RADIUS,5
 PHRED_MEANINGFUL_SCORE_MIN,30,PAM_DISTANCE_MAX,5
 SCORE_MATCH,2,SCORE_MISMATCH,-1
 "SCORE_GAP_OPEN,",-50,SCORE_GAP_EXTEND,-4
@@ -15,27 +15,23 @@ GFP(KJ668651.1_partial),GGTACCTCCTACGGGAGGCAGCAGTGAGGAATTTTCCGCAATGGGCGAAAGCCTGA
 
 Results:
 file,reference,warning,genotype,_of,# total,# error,# not err,# of genotype
-test_for_mixed_PME.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/WT,homo(+/+) of WT(0.987 without err),234,err 10(0.043),224,WT 221(0.987),1I-4 1(0.004),1I1D-1 1(0.004),1D-3 1(0.004)
-538 lines,PME31(_Vp10G07510)_Replicone~400,,WT/WT,homo(+/+) of WT(0.94 without err),304,err 5(0.016),299,WT 281(0.94),3D-2 4(0.013),1D-3 3(0.01),1I-4 3(0.01),2D-2 1(0.003),1I19D14 1(0.003),11D0 1(0.003),1I1D-4 1(0.003),1I1D-2 1(0.003),4D0 1(0.003),1I1D-3 1(0.003),6D-2 1(0.003)
+test_for_mixed_PME.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/WT,homo(+/+) of WT(0.978 without err),234,err 10(0.043),224,WT 219(0.978),1I1D2 2(0.009),1I-4 1(0.004),1I1D-1 1(0.004),1D-3 1(0.004)
+538 lines,PME31(_Vp10G07510)_Replicone~400,,WT/WT,homo(+/+) of WT(0.933 without err),304,err 5(0.016),299,WT 279(0.933),3D-2 4(0.013),1D-3 3(0.01),1I-4 3(0.01),2D-2 1(0.003),1I19D14 1(0.003),11D0 1(0.003),1I1D1 1(0.003),1I-6 1(0.003),1I1D-2 1(0.003),1I1D2 1(0.003),4D0 1(0.003),1I1D-3 1(0.003),6D-2 1(0.003)
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 
-test_for_position.fastq,PME30(_Vp11G28940)_Replicone~400,"Reads not enough, Genotype is ambiguous",WT/1I1D-5,ambiguous(err) of WT(0.667 without err) and 1I1D-5(0.056 without err) (sum: 0.723),18,err 0(0.0),18,WT 12(0.667),1I1D-5 1(0.056),1I1D-4 1(0.056),1I1D-3 1(0.056),1I1D-2 1(0.056),1I1D-1 1(0.056),1I1D0 1(0.056)
+test_for_position.fastq,PME30(_Vp11G28940)_Replicone~400,"Reads not enough, Genotype is ambiguous",WT/1I1D-7,ambiguous(err) of WT(0.444 without err) and 1I1D-7(0.056 without err) (sum: 0.500),18,err 0(0.0),18,WT 8(0.444),1I1D-7 1(0.056),1I1D-6 1(0.056),1I1D-5 1(0.056),1I1D-4 1(0.056),1I1D-3 1(0.056),1I1D-2 1(0.056),1I1D-1 1(0.056),1I1D0 1(0.056),1I1D1 1(0.056),1I1D2 1(0.056)
 18 lines,PME31(_Vp10G07510)_Replicone~400,"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 
-1_S1_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/WT,homo(+/+) of WT(0.995 without err),4689,err 124(0.026),4565,WT 4541(0.995),1I1D-1 11(0.002),1I-4 7(0.002),1I1D-2 4(0.001),1D-3 2(0.0)
+1_S1_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/WT,homo(+/+) of WT(0.991 without err),4689,err 124(0.026),4565,WT 4524(0.991),1I1D-1 11(0.002),1I1D2 9(0.002),1I1D1 8(0.002),1I-4 7(0.002),1I1D-2 4(0.001),1D-3 2(0.0)
 4713 lines,PME31(_Vp10G07510)_Replicone~400,"Reads not enough, Error only, Too many err",err/err,err(err) of err(0 without err),24,err 24(1.0),0
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 
-2_S2_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/1I-4,hetero(-/+) of WT(0.522 without err) and 1I-4(0.477 without err) (sum: 0.999),4491,err 184(0.041),4307,WT 2249(0.522),1I-4 2055(0.477),1D-3 2(0.0),1I-3 1(0.0)
+2_S2_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/1I-4,hetero(-/+) of WT(0.521 without err) and 1I-4(0.477 without err) (sum: 0.998),4491,err 184(0.041),4307,WT 2245(0.521),1I-4 2055(0.477),1I1D1 4(0.001),1D-3 2(0.0),1I-3 1(0.0)
 4512 lines,PME31(_Vp10G07510)_Replicone~400,"Reads not enough, Error only, Too many err",err/err,err(err) of err(0 without err),21,err 21(1.0),0
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 
-3_S3_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,1I-4/WT,hetero(-/+) of 1I-4(0.476 without err) and WT(0.397 without err) (sum: 0.873),4395,err 387(0.088),4008,1I-4 1908(0.476),WT 1593(0.397),3D-2 63(0.016),9I3D-1 54(0.013),62D37 52(0.013),35D29 45(0.011),9D2 35(0.009),3D-3 33(0.008),33D4 31(0.008),5D-5 30(0.007),9D1 29(0.007),10D6 23(0.006),1I12D8 22(0.005),8D3 19(0.005),4D-4 17(0.004),7D0 14(0.003),5D-2 12(0.003),1I1D-3 11(0.003),1D-4 8(0.002),8D-3 2(0.0),1D-3 2(0.0),2I1D-4 2(0.0),49D26 1(0.0),1I1D-1 1(0.0),1I-3 1(0.0)
+3_S3_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,1I-4/WT,hetero(-/+) of 1I-4(0.476 without err) and WT(0.391 without err) (sum: 0.867),4395,err 387(0.088),4008,1I-4 1908(0.476),WT 1569(0.391),3D-2 63(0.016),9I3D-1 54(0.013),62D37 52(0.013),35D29 45(0.011),9D2 35(0.009),3D-3 33(0.008),33D4 31(0.008),5D-5 30(0.007),9D1 29(0.007),2D-6 23(0.006),10D6 23(0.006),1I12D8 22(0.005),8D3 19(0.005),4D-4 17(0.004),7D0 14(0.003),5D-2 12(0.003),1I1D-3 11(0.003),1D-4 8(0.002),8D-3 2(0.0),1D-3 2(0.0),2I1D-4 2(0.0),49D26 1(0.0),1I1D-1 1(0.0),1I-3 1(0.0),1I1D1 1(0.0)
 4474 lines,PME31(_Vp10G07510)_Replicone~400,"Error only, Too many err",err/err,err(err) of err(0 without err),79,err 79(1.0),0
-,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
-
-60_S36_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,"Reads not enough, Too many err",WT/WT,homo(+/+) of WT(1.0 without err),17,err 7(0.412),10,WT 10(1.0)
-46860 lines,PME31(_Vp10G07510)_Replicone~400,Genotype is ambiguous,2D-1/3D-4,ambiguous(err) of 2D-1(0.452 without err) and 3D-4(0.345 without err) (sum: 0.797),46843,err 933(0.02),45910,2D-1 20744(0.452),3D-4 15849(0.345),1I-4 4663(0.102),WT 4545(0.099),1I4D-3 58(0.001),1I1D-4 11(0.0),1I3D-1 8(0.0),1I3D0 6(0.0),1I-3 5(0.0),4D0 3(0.0),1D-3 3(0.0),3D-2 3(0.0),1I1D-1 2(0.0),14D-4 1(0.0),24D9 1(0.0),5D1 1(0.0),23D3 1(0.0),22D18 1(0.0),2D0 1(0.0),26D7 1(0.0),1I1D-3 1(0.0),64D35 1(0.0),2I1D-4 1(0.0)
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 

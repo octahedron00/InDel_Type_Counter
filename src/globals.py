@@ -1,4 +1,4 @@
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -25,7 +25,7 @@ global PAM_DISTANCE_MAX, PHRED_MEANINGFUL_MIN, ERR_RATIO_MAX, ERR_PADDING_FOR_SE
 ERR_RATIO_MAX = 0.03
 ERR_PADDING_FOR_SEQ = 1
 CUT_POS_FROM_PAM = -3
-CUT_POS_RADIUS = 3
+CUT_POS_RADIUS = 5
 EXPLANATION_MAP['err_ratio_max'] = "The threshold of mismatch ratio in aligned line set, without the main indel."
 EXPLANATION_MAP['err_padding_for_seq'] = "The mismatch in this padding length from both end will not be counted"
 EXPLANATION_MAP['cut_pos_from_pam'] = "Set estimated 'cut' position from the starting point of PAM sequence"

@@ -114,6 +114,7 @@ class Line_Set:
     indel_type_pos = 0
     cut_pos = 0
     std_pos = 0
+    rna_pos = 0
 
     # # only for the beauty of the log
     indel_same_type_count = 0
@@ -242,6 +243,8 @@ class Line_Set:
     def _set_indel_pos_line(self, guide_rna_seq: str):
         # get the guide_rna_seq alignment, from the function outside
         pri, pre = get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)
+
+        self.rna_pos = pre
 
         # if guide RNA is not aligned: the sequence will be considered as an error,
         # since no indel is close the cut_pos(ition)

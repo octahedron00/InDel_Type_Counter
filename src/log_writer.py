@@ -34,14 +34,15 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    f"\n"
                    f"\n")
 
-    file_log.write(str(indel_counter))
-    file_log.write("\n"
-                   "\n")
-
-    file_log.write(indel_counter.get_examples_text())
+    file_log.write(indel_counter.get_simple_example_text())
     file_log.write("\n"
                    "\n"
                    "----------------------\n")
+
+    # file_log.write(indel_counter.get_examples_text())
+    # file_log.write("\n"
+    #                "\n"
+    #                "----------------------\n")
 
     file_log.write("[Raw Data]\n"
                    "\n"
@@ -58,7 +59,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
 
 def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
 
-    file_log = open("../count_result.txt", "w")
+    file_log = open(MAIN_LOG_NAME, "w")
 
     file_log.write(f"# <InDel_Type_Counter {glv.VERSION} Main Log>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
@@ -73,7 +74,7 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype
         file_log.write(f"<{indel_counter_list[0].file_name}>\n"
                        f"\n")
         for indel_counter in indel_counter_list:
-            file_log.write(str(indel_counter))
+            file_log.write(indel_counter.get_simple_example_text())
             file_log.write("\n"
                            "\n"
                            "\n")
