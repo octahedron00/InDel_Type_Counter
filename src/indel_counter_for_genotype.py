@@ -2,12 +2,14 @@ from src.line_set import Line_Set
 from src.reference import Reference
 
 # Variables for validation
-
 HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
 READ_MIN = 30
+
+# Variables for uh... zero division
+Z = 0.000000001
 
 
 class InDel_Counter_for_Genotype:
@@ -19,6 +21,10 @@ class InDel_Counter_for_Genotype:
     best_example_map = {}
 
     def __init__(self, ref_set: Reference):
+
+        # Only init the initial values of variables:
+        # The real value will be updated with each 'count' function
+
         self.ref_name = ref_set.ref_name
         self.guide_rna_name = ref_set.guide_rna_name
         self.guide_rna_seq = ref_set.guide_rna_seq
@@ -62,24 +68,29 @@ class InDel_Counter_for_Genotype:
         self.file_name = file_name
 
     def count(self, line_set: Line_Set):
-        if line_set.ref_name == self.ref_name:
-            if line_set.indel_type in self.count_map.keys():
-                self.count_map[line_set.indel_type] += 1
-            else:
-                self.count_map[line_set.indel_type] = 1
+        if line_set.ref_name != self.ref_name:
+            return
+        if line_set.indel_type in self.count_map.keys():
+            self.count_map[line_set.indel_type] += 1
+        else:
+            self.count_map[line_set.indel_type] = 1
 
-            if line_set.indel_type in self.best_example_map.keys():
-                # check the highest score, highest phred_score, largest length.
-                if self.best_example_map[line_set.indel_type].score < line_set.score:
-                    self.best_example_map[line_set.indel_type] = line_set
-                elif self.best_example_map[line_set.indel_type].score == line_set.score:
-                    if self.best_example_map[line_set.indel_type].phred_score < line_set.phred_score:
-                        self.best_example_map[line_set.indel_type] = line_set
-                    if self.best_example_map[line_set.indel_type].phred_score == line_set.phred_score:
-                        if len(self.best_example_map[line_set.indel_type]) < len(line_set):
-                            self.best_example_map[line_set.indel_type] = line_set
-            else:
+        if line_set.indel_type in self.best_example_map.keys():
+            # check the highest score, the highest phred_score, and the largest length.
+
+            if self.best_example_map[line_set.indel_type].score < line_set.score:
                 self.best_example_map[line_set.indel_type] = line_set
+            elif self.best_example_map[line_set.indel_type].score == line_set.score:
+
+                if self.best_example_map[line_set.indel_type].phred_score < line_set.phred_score:
+                    self.best_example_map[line_set.indel_type] = line_set
+                elif self.best_example_map[line_set.indel_type].phred_score == line_set.phred_score:
+
+                    if len(self.best_example_map[line_set.indel_type]) < len(line_set):
+                        self.best_example_map[line_set.indel_type] = line_set
+        else:
+            # initial set for the indel type
+            self.best_example_map[line_set.indel_type] = line_set
 
     def get_sorted_count_map_list(self):
         sorted_count_tuple_list = list(sorted(self.count_map.items(), key=lambda k: k[1], reverse=True))
@@ -121,102 +132,104 @@ class Genotype:
     def __init__(self, indel_counter: InDel_Counter_for_Genotype, sorted_count_tuple_list: list):
 
         if len(indel_counter) < READ_MIN:
-            if len(self.warning) > 0:
-                self.warning += '\n'
-                self.warning += "Reads not enough"
-            else:
-                self.warning = "Reads not enough"
-                # TODO: add warning_append function inside the class, rewrite warnings shorter
-                # TODO: make the code easy to read
-                # TODO: make another function for all these works... maybe?
+            self.append_warning("Reads not enough")
 
+        # now, set the main genotype
         if len(sorted_count_tuple_list) < 2:
             self.name = "err"
-            self.warning = "error only"
             self.allele1_name = self.allele2_name = 'err'
-            self.allele_set_text = "err/err"
-            self.allele_set_shape = "err"
+
+            self.append_warning("Error only")
 
         elif len(sorted_count_tuple_list) < 3:
             self.name = "homo"
             for key, value in sorted_count_tuple_list:
                 if key != 'err':
-                    self.allele1_name = key
-                    self.allele1_ratio = 1
-                    self.allele_set_text = key + "/" + key
-                    if self.allele1_name == "WT":
-                        self.allele_set_shape = "+/+"
-                    else:
-                        self.allele_set_shape = "-/-"
+                    self.allele1_name = self.allele2_name = key
+                    self.allele1_ratio = 1.000
         else:
-            is_third_ratio_good = True
             for key, value in sorted_count_tuple_list:
                 if key != 'err':
-                    if 0 < self.allele2_ratio:
-                        if key == 'err':
-                            continue
-                        if value / indel_counter.get_len(with_err=False) > THIRD_RATIO_MAX:
-                            is_third_ratio_good = False
-                        break
-                    elif 0 < self.allele1_ratio:
+                    if self.allele1_ratio == 0:
+                        self.allele1_name = key
+                        self.allele1_ratio = round(value / indel_counter.get_len(with_err=False), 3)
+                    elif self.allele2_ratio == 0:
                         self.allele2_name = key
                         self.allele2_ratio = round(value / indel_counter.get_len(with_err=False), 3)
                     else:
-                        self.allele1_name = key
-                        self.allele1_ratio = round(value / indel_counter.get_len(with_err=False), 3)
+                        break
             if self.allele1_ratio > HOMO_RATIO_MIN:
                 self.name = "homo"
-                if self.allele2_ratio > THIRD_RATIO_MAX:
-                    is_third_ratio_good = False
-                if self.allele1_name == "WT":
-                    self.allele_set_shape = "+/+"
-                    self.allele_set_text = "WT/WT"
-                else:
-                    self.allele_set_shape = "-/-"
-                    self.allele_set_text = self.allele1_name + "/" + self.allele1_name
-
             elif self.allele2_ratio > HETERO_RATIO_MIN:
                 self.name = "hetero"
-                self.allele_set_text = self.allele1_name + "/" + self.allele2_name
-                if "WT" in (self.allele1_name, self.allele2_name):
-                    self.allele_set_shape = "-/+"
-                else:
-                    self.allele_set_shape = "1/2"
             else:
                 self.name = "ambiguous"
-                self.warning = "No genotype set is dominant enough"
-                self.allele_set_text = self.allele1_name + "/" + self.allele2_name
-                self.allele_set_shape = "err"
+                self.append_warning("Genotype is ambiguous")
 
-            if not is_third_ratio_good:
-                if len(self.warning) > 0:
-                    self.warning += '\n'
-                    self.warning += "The ratio of next biggest allele is too large"
-                else:
-                    self.warning = "The ratio of next biggest allele is too large"
+        # setting the allele set
+        if self.name == 'err':
+            self.allele_set_text = 'err/err'
+            self.allele_set_shape = 'err'
 
-            if (indel_counter.count_map['err'] / len(indel_counter)) > ERR_RATIO_MAX:
-                if len(self.warning) > 0:
-                    self.warning += '\n'
+        if self.name == 'homo':
+            if self.allele1_name == 'WT':
+                self.allele_set_shape = '+/+'
+            else:
+                self.allele_set_shape = '-/-'
+            self.allele_set_text = self.allele1_name + "/" + self.allele1_name
 
-                    self.warning += "Error ratio is high"
-                else:
-                    self.warning = "Error ratio is high"
+        if self.name == 'ambiguous':
+            self.allele_set_text = self.allele1_name + "/" + self.allele2_name
+            self.allele_set_shape = 'err'
+
+        if self.name == 'hetero':
+            if 'WT' in (self.allele1_name, self.allele2_name):
+                self.allele_set_shape = '-/+'
+            else:
+                self.allele_set_shape = '1/2'
+            self.allele_set_text = self.allele1_name + "/" + self.allele2_name
+
+        # appending warning messages
+        # err ratio
+        if (indel_counter.count_map['err'] / (len(indel_counter) + Z)) > ERR_RATIO_MAX:
+            self.append_warning("Too many err")
+
+        # other allele ratio test
+        if self.name == 'homo' and len(sorted_count_tuple_list) > 2:
+            pos = 1
+            for i in range(2):
+                key, value = sorted_count_tuple_list[i]
+                if key == 'err':
+                    pos = 2
+            key, value = sorted_count_tuple_list[pos]
+            if value / indel_counter.get_len(with_err=False) > THIRD_RATIO_MAX:
+                self.append_warning("Other allele ratio is too large")
+        if self.name == 'hetero' and len(sorted_count_tuple_list) > 3:
+            pos = 2
+            for i in range(3):
+                key, value = sorted_count_tuple_list[i]
+                if key == 'err':
+                    pos = 3
+            key, value = sorted_count_tuple_list[pos]
+            if value / indel_counter.get_len(with_err=False) > THIRD_RATIO_MAX:
+                self.append_warning("Other allele ratio is too large")
 
     def __str__(self):
+        string = ""
         if self.name in ('hetero', 'ambiguous'):
             string = f"{self.name}({self.allele_set_shape}) of " \
-                     f"{self.allele1_name}({self.allele1_ratio} without err) and " \
-                     f"{self.allele2_name}({self.allele2_ratio} without err) " \
-                     f"(sum: {round(self.allele1_ratio+self.allele2_ratio, 3)})"
-            if len(self.warning) > 0:
-                string += "\n"
-                string += self.warning
-            return string
+                     f"{self.allele1_name}({self.allele1_ratio:.3f} without err) and " \
+                     f"{self.allele2_name}({self.allele2_ratio:.3f} without err) " \
+                     f"(sum: {(self.allele1_ratio + self.allele2_ratio):.3f})"
         else:
             string = f"{self.name}({self.allele_set_shape}) of " \
                      f"{self.allele1_name}({self.allele1_ratio} without err)"
-            if len(self.warning) > 0:
-                string += "\n"
-                string += self.warning
-            return string
+        if len(self.warning) > 0:
+            string += "\n"
+            string += self.warning
+        return string
+
+    def append_warning(self, new_warning: str):
+        if len(self.warning) > 0:
+            self.warning += "\n"
+        self.warning += new_warning

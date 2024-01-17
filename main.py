@@ -79,6 +79,12 @@ def get_total_number_of_reads(address_list: list[str]):
     return total_reads_count
 
 
+def key_for_sorting_err(line_set: Line_Set):
+    if line_set.indel_type == 'err':
+        return len(line_set)
+    return 0
+
+
 @click.command()
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])
@@ -227,11 +233,10 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
         indel_counter_map = {}
         for indel_counter in indel_counter_list:
             indel_counter_map[indel_counter.ref_name] = indel_counter
-        line_set_list.sort(key=lambda l: len(l))
         line_set_list.sort(key=lambda l: l.phred_score, reverse=True)
         line_set_list.sort(key=lambda l: l.score, reverse=True)
         line_set_list.sort(key=lambda l: indel_counter_map[l.ref_name].count_map[l.indel_type], reverse=True)
-        line_set_list.sort(key=lambda l: l.indel_type == 'err')
+        line_set_list.sort(key=lambda l: key_for_sorting_err(l))
 
         # Writing sub log
         for indel_counter in indel_counter_list:

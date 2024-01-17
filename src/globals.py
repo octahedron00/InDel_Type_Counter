@@ -47,8 +47,7 @@ EXPLANATION_MAP['score_match'] = "Score for align: for Match"
 EXPLANATION_MAP['score_mismatch'] = "Score for align: for Mismatch"
 EXPLANATION_MAP['score_gap_open'] = "Score for align: for Gap Open; " \
                                     "low penalty for 'gaps' will make fake indels more often"
-EXPLANATION_MAP['score_gap_extend'] = "Score for align: for Gap Extension; " \
-                                      "low penalty for 'gaps' will make fake indels more often"
+EXPLANATION_MAP['score_gap_extend'] = "Score for align: for Gap Extension"
 
 
 # for generating align matrix

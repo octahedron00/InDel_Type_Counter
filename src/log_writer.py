@@ -14,6 +14,9 @@ MAIN_LOG_NAME = "./count_result.txt"
 CSV_LOG_NAME = "./count_result.csv"
 XLSX_LOG_NAME = "./count_result.xlsx"
 
+# Variables for uh... zero division
+Z = 0.000000001
+
 
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
     file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
@@ -26,6 +29,8 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    f"# {file_name} as a data / {indel_counter.ref_name} as a reference sequence\n"
                    f"\n"
                    f"{glv.get_text_of_global_variables()}"
+                   f"\n"
+                   f"{_showing_selected_area_to_text(guide_rna_seq=indel_counter.guide_rna_seq)}"
                    f"\n"
                    f"\n")
 
@@ -53,7 +58,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
 
 def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
 
-    file_log = open("../Count_result.txt", "w")
+    file_log = open("../count_result.txt", "w")
 
     file_log.write(f"# <InDel_Type_Counter {glv.VERSION} Main Log>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
@@ -100,14 +105,16 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Geno
 
     for indel_counter_list in indel_counter_list_list:
         total_lines_for_file = 0
+
         for indel_counter in indel_counter_list:
             total_lines_for_file += len(indel_counter)
+
         for i, indel_counter in enumerate(indel_counter_list):
             row = [""]
             genotype = indel_counter.get_genotype()
             sorted_count_map_list = indel_counter.get_sorted_count_map_list()
-            len_without_err = indel_counter.get_len(with_err=False) + 0.000001
-            len_total = len(indel_counter) + 0.000001
+            len_without_err = indel_counter.get_len(with_err=False) + Z
+            len_total = len(indel_counter) + Z
             if i == 0:
                 row[0] = indel_counter.file_name
             if i == 1:
@@ -133,11 +140,20 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Geno
     # Write Excel file: CSV is not working well in Excel software
     workbook = Workbook(XLSX_LOG_NAME)
     worksheet = workbook.add_worksheet()
+
+    italic_format = workbook.add_format({'italic': True, 'font_color': 'silver'})
     with open(CSV_LOG_NAME, 'rt', encoding='utf8') as f:
         reader = csv.reader(f)
         for r, row in enumerate(reader):
+            cell_format = workbook.add_format({})
+            if len(row) > 2 and len(str(row[2])) > 8:
+                if str(row[2])[:5] in (str("Reads not enough")[:5], str("Error only")[:5]):
+                    cell_format = italic_format
+
             for c, col in enumerate(row):
                 worksheet.write(r, c, col)
+                if c > 0:
+                    worksheet.write(r, c, col, cell_format)
         worksheet.set_column_pixels(0, 0, 255/1.4275)
         worksheet.set_column_pixels(2, 2, 255/1.4275)
         worksheet.set_column_pixels(4, 4, 660/1.4275)
@@ -147,3 +163,68 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Geno
     workbook.close()
 
 
+def _showing_selected_area_to_text(guide_rna_seq: str):
+
+    pos_line = ""
+    ref_line = guide_rna_seq
+    selected_area_line = ""
+
+    # pre = position rna ending
+    pre = len(ref_line)
+    std_pos = len(ref_line)
+    cut_pos = len(ref_line) + glv.CUT_POS_FROM_PAM
+
+    ref_line += "NGG_______"
+
+    for i, a in enumerate(ref_line):
+        if i < pre:
+            pos_line += '>'
+        elif std_pos <= i < std_pos+3:
+            pos_line += '<'
+        else:
+            pos_line += ' '
+
+        if (cut_pos - glv.CUT_POS_RADIUS) <= i < cut_pos:
+            selected_area_line += '('
+        elif cut_pos <= i < (cut_pos + glv.CUT_POS_RADIUS):
+            selected_area_line += ')'
+        else:
+            selected_area_line += ' '
+
+    pos_line += '    '
+    ref_line += ' or '
+    selected_area_line += '    '
+
+    new_starting_point = len(ref_line)
+
+
+    ref_line += guide_rna_seq
+
+    pre = len(ref_line)
+    std_pos = len(ref_line) + 1
+    cut_pos = len(ref_line) + 1 + glv.CUT_POS_FROM_PAM
+
+    ref_line += "_NGG_______"
+
+    for i, a in enumerate(ref_line):
+        if i < new_starting_point:
+            continue
+
+        if i < pre:
+            pos_line += '>'
+        elif std_pos <= i < std_pos + 3:
+            pos_line += '<'
+        else:
+            pos_line += ' '
+
+        if (cut_pos - glv.CUT_POS_RADIUS) <= i < cut_pos:
+            selected_area_line += '('
+        elif cut_pos <= i < (cut_pos + glv.CUT_POS_RADIUS):
+            selected_area_line += ')'
+        else:
+            selected_area_line += ' '
+
+    return f"Selected area for estimated indel position is: \n" \
+           f"{pos_line}\n" \
+           f"{ref_line}\n" \
+           f"{selected_area_line}\n"
