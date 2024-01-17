@@ -1,6 +1,6 @@
-<InDel_Type_Counter 1.1.0 Main Log>
-Log at 2024-01-17 19:21:19.204844 (UTC 9:00:00)
-Task Title,Task at 2024-01-17 19:20:28.063779
+<InDel_Type_Counter 1.1.1 Main Log>
+Log at 2024-01-17 21:55:35.710885 (UTC 9:00:00)
+Task Title,Task at 2024-01-17 21:51:33.870036
 ERR_RATIO_MAX,0.03,ERR_PADDING_FOR_SEQ,1
 CUT_POS_FROM_PAM,-3,CUT_POS_RADIUS,5
 PHRED_MEANINGFUL_SCORE_MIN,30,PAM_DISTANCE_MAX,5
@@ -33,5 +33,9 @@ test_for_position.fastq,PME30(_Vp11G28940)_Replicone~400,"Reads not enough, Geno
 
 3_S3_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,1I-4/WT,hetero(-/+) of 1I-4(0.476 without err) and WT(0.391 without err) (sum: 0.867),4395,err 387(0.088),4008,1I-4 1908(0.476),WT 1569(0.391),3D-2 63(0.016),9I3D-1 54(0.013),62D37 52(0.013),35D29 45(0.011),9D2 35(0.009),3D-3 33(0.008),33D4 31(0.008),5D-5 30(0.007),9D1 29(0.007),2D-6 23(0.006),10D6 23(0.006),1I12D8 22(0.005),8D3 19(0.005),4D-4 17(0.004),7D0 14(0.003),5D-2 12(0.003),1I1D-3 11(0.003),1D-4 8(0.002),8D-3 2(0.0),1D-3 2(0.0),2I1D-4 2(0.0),49D26 1(0.0),1I1D-1 1(0.0),1I-3 1(0.0),1I1D1 1(0.0)
 4474 lines,PME31(_Vp10G07510)_Replicone~400,"Error only, Too many err",err/err,err(err) of err(0 without err),79,err 79(1.0),0
+,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
+
+5-1_S13_L001_R1_001.fastq,PME30(_Vp11G28940)_Replicone~400,,WT/WT,homo(+/+) of WT(0.996 without err),31541,err 760(0.024),30781,WT 30654(0.996),1I1D2 42(0.001),1I1D-2 35(0.001),1I1D1 29(0.001),1I1D-1 8(0.0),1I1D-4 4(0.0),1I1D-6 3(0.0),1I1D-7 3(0.0),1I1D-3 1(0.0),2I2D-2 1(0.0),1I1D0 1(0.0)
+31565 lines,PME31(_Vp10G07510)_Replicone~400,"Reads not enough, Error only, Too many err",err/err,err(err) of err(0 without err),24,err 24(1.0),0
 ,GFP(KJ668651.1_partial),"Reads not enough, Error only",err/err,err(err) of err(0 without err),0,err 0(0.0),0
 

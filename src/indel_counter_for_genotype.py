@@ -139,6 +139,7 @@ class InDel_Counter_for_Genotype:
                                            key=lambda f: self.count_map[f[0]], reverse=True)
 
         if genotype.name == 'err' or len(sorted_best_example_tuple) < 2:
+            text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True)+Z)):.3f})\n"
             return text
 
         key, line_set = sorted_best_example_tuple[0]
@@ -231,8 +232,7 @@ def get_simple_example_set(line_set: Line_Set):
     return {"ref_line": simple_ref_line,
             "read_line": simple_read_line,
             "match_line": simple_match_line,
-            "pos_line": simple_pos_line,
-            'k': 0}
+            "pos_line": simple_pos_line}
 
 
 class Genotype:

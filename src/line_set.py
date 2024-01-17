@@ -177,6 +177,8 @@ class Line_Set:
         # = Aligning the subsequence in the sequence
         ref_seq = "X" + ref_seq + "X"
 
+        read_seq = read_seq.replace("N", "-")
+
         # align with the pre-set global variables for alignments.
         aligner = PairwiseAligner()
         matrix = substitution_matrices.Array(data=glv.get_align_matrix_for_subsequence_positioning())

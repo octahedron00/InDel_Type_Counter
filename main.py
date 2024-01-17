@@ -16,6 +16,8 @@ GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 
+TIME_LEFT_REFRESH_READS = 3000
+
 # with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
 # > total 800 nt of ref, 150 nt for a line: 40,000,000 for a second.
 
@@ -151,6 +153,8 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     total_reads_count = get_total_number_of_reads(address_list=address_list)
     finish_reads_count = 0
     start_time = datetime.datetime.now()
+    start_time_for_1000_first = datetime.datetime.now()
+    start_time_for_1000_second = datetime.datetime.now()
 
     for file_no, file_name in enumerate(address_list):
         '''
@@ -197,14 +201,23 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
 
             # # # for showing expected time left
             finish_reads_count += 1
+            if finish_reads_count % TIME_LEFT_REFRESH_READS == 0:
+                start_time_for_1000_second = start_time_for_1000_first
+                start_time_for_1000_first = datetime.datetime.now()
+
             if (i % 100) == 0:
                 now_time = datetime.datetime.now()
                 delta_time = now_time - start_time
+                delta_count = finish_reads_count
+                if finish_reads_count >= TIME_LEFT_REFRESH_READS*2:
+                    delta_time = now_time - start_time_for_1000_second
+                    delta_count = TIME_LEFT_REFRESH_READS + (finish_reads_count % TIME_LEFT_REFRESH_READS)
+
                 print(f"\r({file_no + 1}/{len(address_list)}) "
                       f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
-                      f"remaining: {(delta_time/finish_reads_count)*(total_reads_count-finish_reads_count)} "
-                      f"(for this file: {(delta_time/finish_reads_count)*(len(read_raw_list)-(i+1))}) "
-                      f"(length: {len(read_raw_list)})", end="")
+                      f"remaining: {(delta_time/delta_count)*(total_reads_count-finish_reads_count)} "
+                      f"(for this file: {(delta_time/delta_count)*(len(read_raw_list)-(i+1))}) "
+                      f"(length: {len(read_raw_list)})                              ", end="")
 
             best_line_set = get_best_line_set(read_raw, reference_list)
             best_line_set.set_file_name(file_name=file_name)
@@ -213,7 +226,7 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
 
         # # # for showing expected time left / while log writing
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / "
-              f"Writing log files (length: {len(line_set_list)})", end="")
+              f"Writing log files (length: {len(line_set_list)})                              ", end="")
 
         # count the number of each indel type,
         # also setting the best line_set for each indel type happens here
@@ -252,7 +265,7 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
         end_time_for_file = datetime.datetime.now()
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
-              f"(length: {len(line_set_list)})")
+              f"(length: {len(line_set_list)})                              ")
         # end.
 
     # Writing total log

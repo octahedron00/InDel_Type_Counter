@@ -1,7 +1,7 @@
-# <InDel_Type_Counter 1.1.0 Main Log>
-# Log at 2024-01-17 19:21:19.202846 (UTC 9:00:00)
+# <InDel_Type_Counter 1.1.1 Main Log>
+# Log at 2024-01-17 21:55:35.705877 (UTC 9:00:00)
 # 
-# Task Title: Task at 2024-01-17 19:20:28.063779
+# Task Title: Task at 2024-01-17 21:51:33.870036
 
 ERR_RATIO_MAX: 0.03
 ERR_PADDING_FOR_SEQ: 1
@@ -33,6 +33,7 @@ GGACATAACTATCCGCAACA C-GCTGGGCCGGA : 1D-3    (    1/224, 0.004)
 ---------------------------------- : err     (   10/234, 0.043)
 
 
+
 for PME31(_Vp10G07510)_Replicone~400 in test_for_mixed_PME.fastq: 
 guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
 
@@ -60,6 +61,15 @@ GAACATAACTATCCGCA- -- ---CTGGGCCAGA : 6D-2    (    1/299, 0.003)
 ----------------------------------- : err     (    5/304, 0.016)
 
 
+
+for GFP(KJ668651.1_partial) in test_for_mixed_PME.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
 
@@ -92,8 +102,25 @@ GGACATAACTATCCGCAACACAGCTGaGCCGGA : 1I1D2   (    1/18, 0.056)
 
 
 
+for PME31(_Vp10G07510)_Replicone~400 in test_for_position.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
+
+for GFP(KJ668651.1_partial) in test_for_position.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
 
@@ -120,8 +147,26 @@ GGACATAACTATCCGCAACA C-GCTGGGCCGGA : 1D-3    (    2/4565, 0.000)
 
 
 
+for PME31(_Vp10G07510)_Replicone~400 in 1_S1_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+Too many err
+err: 24 (1.000)
 
 
+
+for GFP(KJ668651.1_partial) in 1_S1_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
 
@@ -146,8 +191,26 @@ GACATAACTATCCGCAACAC AGGCTGGGCCGGAG : 1I-3    (    1/4307, 0.000)
 
 
 
+for PME31(_Vp10G07510)_Replicone~400 in 2_S2_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+Too many err
+err: 21 (1.000)
 
 
+
+for GFP(KJ668651.1_partial) in 2_S2_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
 
@@ -194,8 +257,75 @@ GGACATAACTATCCG      CAAC A C AGCTtGGCCGGA : 1I1D1   (    1/4008, 0.000)
 
 
 
+for PME31(_Vp10G07510)_Replicone~400 in 3_S3_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Error only
+Too many err
+err: 79 (1.000)
 
 
+
+for GFP(KJ668651.1_partial) in 3_S3_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
+
+
+
+<5-1_S13_L001_R1_001.fastq>
+
+for PME30(_Vp11G28940)_Replicone~400 in 5-1_S13_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME30(31) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+homo(+/+) of WT(0.996 without err)
+
+     >>>>>>>>>>>>>>>>>>>><<<     
+GGACATAACTATCCGCAACACAGCTGGGCCGGA : WT      Total without err: 30781
+
+GGACATAACTATCCGCAACACAGCTGGGCCGGA : WT      (30654/30781, 0.996)
+GGACATAACTATCCGCAACACAGCTGtGCCGGA : 1I1D2   (   42/30781, 0.001)
+GGACATAACTATCCGCAACACAtCTGGGCCGGA : 1I1D-2  (   35/30781, 0.001)
+GGACATAACTATCCGCAACACAGCTtGGCCGGA : 1I1D1   (   29/30781, 0.001)
+GGACATAACTATCCGCAACACAGaTGGGCCGGA : 1I1D-1  (    8/30781, 0.000)
+GGACATAACTATCCGCAACAaAGCTGGGCCGGA : 1I1D-4  (    4/30781, 0.000)
+GGACATAACTATCCGCAAaACAGCTGGGCCGGA : 1I1D-6  (    3/30781, 0.000)
+GGACATAACTATCCGCAgCACAGCTGGGCCGGA : 1I1D-7  (    3/30781, 0.000)
+GGACATAACTATCCGCAACACgGCTGGGCCGGA : 1I1D-3  (    1/30781, 0.000)
+GGACATAACTATCCGCAACACttCTGGGCCGGA : 2I2D-2  (    1/30781, 0.000)
+GGACATAACTATCCGCAACACAGCcGGGCCGGA : 1I1D0   (    1/30781, 0.000)
+
+--------------------------------- : err     (  760/31541, 0.024)
+
+
+
+for PME31(_Vp10G07510)_Replicone~400 in 5-1_S13_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+Too many err
+err: 24 (1.000)
+
+
+
+for GFP(KJ668651.1_partial) in 5-1_S13_L001_R1_001.fastq: 
+guide_rna: Guide_RNA_for_PME31(30) (TAACTATCCGCAACACAGCT)
+
+[Result] 
+err(err) of err(0 without err)
+Reads not enough
+Error only
+err: 0 (0.000)
 
 
 
