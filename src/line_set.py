@@ -60,6 +60,26 @@ class Reference:
                f"guide_rna_name: {self.guide_rna_name}\n"
 
 
+def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
+    pri = -1
+    pre = -1
+    if len(guide_rna_seq) > 0:
+        for i in range(len(ref_line) - len(guide_rna_seq)):
+            k, is_good = 0, False
+            pri = i
+            for j, n in enumerate(guide_rna_seq):
+                while ref_line[i + j + k] == '-':
+                    k += 1
+                if ref_line[i + j + k] != n:
+                    break
+                if j == (len(guide_rna_seq) - 1):
+                    is_good = True
+                    pre = (i + j + k + 1)
+            if is_good:
+                break
+    return pri, pre
+
+
 class Line_Set:
     '''
     class Line_Set
@@ -119,6 +139,7 @@ class Line_Set:
     indel_type = ""
     indel_length = 0
     indel_reason = ""
+    indel_type_pos = 0
     cut_pos = 0
 
     # # only for the beauty of the log
@@ -215,25 +236,26 @@ class Line_Set:
             else:
                 match_line += '.'
 
-
+        # set the lines
         self.ref_line = ref_line
         self.match_line = match_line
         self.read_line = read_line
 
     def _set_aligned_phred_line_and_score(self, read_raw: SeqIO.SeqRecord):
+        # get quality score list[int] from SeqRecord: fastq files
+        quality_list = read_raw.letter_annotations['phred_quality']
+        if len(quality_list) < 1:
+            return
 
-        quality = read_raw.letter_annotations['phred_quality']
-
-        if len(quality) < 1:
-            return "# phred score not available"
-
+        # Build unaligned phred line from the quality score list, use 33-encoding
         phred_line = ""
-        phred_score = 0
-        for a in quality:
-            phred_line += str(chr(a + 33))
-            phred_score += a
-        aligned_phred_line = ""
+        phred_score_sum = 0
+        for a in quality_list:
+            phred_line += str(chr(a + glv.PHRED_ENCODING))
+            phred_score_sum += a
 
+        # Align the phred line
+        aligned_phred_line = ""
         for c in self.read_line:
             if c == '-':
                 aligned_phred_line += " "
@@ -241,56 +263,59 @@ class Line_Set:
                 aligned_phred_line += phred_line[0]
                 phred_line = phred_line[1:]
 
-        self.phred_score = phred_score / (len(phred_line) + 0.0000001)
+        self.phred_score = phred_score_sum / (len(phred_line) + 0.0000001)
         self.phred_line = aligned_phred_line
 
     def _set_indel_pos_line(self, guide_rna_seq: str):
-        pri = -1
-        pre = -1
-        if len(self.guide_rna_seq) > 0:
-            for i in range(len(self.ref_line) - len(self.guide_rna_seq)):
-                k, is_good = 0, False
-                pri = i
-                for j, n in enumerate(self.guide_rna_seq):
-                    while self.ref_line[i + j + k] == '-':
-                        k += 1
-                    if self.ref_line[i + j + k] != n:
-                        break
-                    if j == (len(self.guide_rna_seq) - 1):
-                        is_good = True
-                        pre = (i + j + k + 1)
-                if is_good:
-                    break
 
+        # get the guide_rna_seq alignment, from the function outside
+        pri, pre = get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)
+
+        # if guide RNA is not aligned: the sequence will be considered as an error,
+        # since no indel is close the cut_pos(ition)
         if pri < 0 or pre < 0:
             self.cut_pos = -1000
             return
 
+        # buffer: for finding the PAM sequence
         ref_line_buffer = self.ref_line + "X" * (glv.PAM_RANGE_MAX * 2)
 
+        # build the pos(ition)_line
+        # add ' ' to the starting point of guide RNA
         pos_line = " " * pri
+        # add '>' at the position of guide RNA
         for i in range(pri, pre):
             if ref_line_buffer[i] == '-':
                 pos_line += "-"
             else:
                 pos_line += ">"
-
+        # find the first possible PAM sequence by 'NGG' (range: PAM_RANGE_MAX)
         for i in range(glv.PAM_RANGE_MAX):
             if ref_line_buffer[pre + i] == ref_line_buffer[pre + i + 1] == "G":
                 pos_line += '<<<'
                 break
             else:
                 pos_line += ' '
-
+        # cut or add more ' ' to make the both length match
         if len(pos_line) < len(self.ref_line):
             pos_line += " " * (len(self.ref_line) - len(pos_line))
         else:
             pos_line = pos_line[:len(self.ref_line)]
 
+        # set the lines
         self.pos_line = pos_line
         self.cut_pos = pre
 
     def _set_main_indel(self, cut_pos: int):
+        '''
+        set main indel, type and reason.
+
+        How it works:
+            by using the end position of 'RNA'
+
+        :param cut_pos:
+        '''
+
         ref_line = self.ref_line
         match_line = self.match_line
         phred_line = self.phred_line
@@ -302,6 +327,7 @@ class Line_Set:
         indel_type = "WT"
         indel_length = 0
         indel_reason = "(WT)"
+        indel_pos = -99999
 
         for i, m in enumerate(match_line + str("X" * (glv.PAM_RANGE_MAX * 2))):
             if i < 2:
@@ -326,16 +352,19 @@ class Line_Set:
                 if indel_d == indel_i == indel_length == 1 and ((pre - glv.PAM_RANGE_MAX) < p2) and (p1 < (pre + glv.PAM_RANGE_MAX)):
                     if (ord(phred_line[p1]) - 33) > glv.PHRED_MEANINGFUL_MIN:
                         indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
+                        indel_pos = p2-pre
                         indel_reason = "Indel position confirmed by guide RNA and signal score"
                         indel_length = indel_length
                 elif ((pre - glv.PAM_RANGE_MAX) < p2) and (p1 < (pre + glv.PAM_RANGE_MAX)):
                     indel_type = self._get_indel_shape_text(indel_i, indel_d, p2 - pre)
+                    indel_pos = p2-pre
                     indel_reason = "Indel position confirmed by guide RNA sequence"
                     indel_length = indel_length
                     break
                 p1 = p2 = -1
                 indel_i = indel_d = indel_length = 0
 
+        self.indel_type_pos = indel_pos
         self.indel_type = indel_type
         self.indel_length = indel_length
         self.indel_reason = indel_reason

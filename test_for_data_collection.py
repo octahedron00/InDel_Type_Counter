@@ -1,4 +1,5 @@
 #!/bin/sh
+# SheBang: Can be changed easily, following other needs
 
 import datetime
 import os
@@ -122,6 +123,7 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
 
     counting_errors = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     average_phred_score = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    indel_position = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     for file_no, file_name in enumerate(address_list):
         '''
@@ -202,19 +204,32 @@ def main(err_max, err_padding, pam_range_max, phred_meaningful_score_min,
                     counting_errors[i] += 1
                 average_phred_score[i] += (ord(phred_line[i])-33)
 
+        for indel_counter in indel_counter_list:
+            best_example_map = indel_counter.best_example_map
+            for key in indel_counter.best_example_map.keys():
+                if key in ('WT', 'err'):
+                    continue
+                line_set = best_example_map[key]
+                count = indel_counter.count_map[key]
+                if line_set.indel_length > 10 or line_set.indel_length < 1:
+                    continue
+                indel_position[line_set.indel_type_pos] += count
+
         # finish: add it to the list, end time calc, print.
         all_indel_counter_list_list.append(indel_counter_list)
         end_time_for_file = datetime.datetime.now()
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Testing / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})")
-
-        print(finish_reads_count, counting_errors)
-        print(finish_reads_count, average_phred_score)
+        #
+        # print(finish_reads_count, counting_errors)
+        # print(finish_reads_count, average_phred_score)
+        print(finish_reads_count, indel_position)
 
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
     print(total_reads_count, counting_errors)
     print(total_reads_count, average_phred_score)
+    print(finish_reads_count, indel_position)
 
 
 if __name__ == '__main__':

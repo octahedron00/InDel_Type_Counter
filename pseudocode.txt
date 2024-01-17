@@ -13,6 +13,7 @@ Dependencies:
     csv, xlsxwriter
         for writing excel-type log file
 
+    datetime, os,
 
 class Line_Set
     내부 데이터들 넣어주기.
