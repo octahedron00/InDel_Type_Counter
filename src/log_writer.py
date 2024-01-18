@@ -10,16 +10,25 @@ import src.globals as glv
 SUB_LOG_ADDRESS = "./log/"
 RESULT_LOG_ADDRESS = "./log/"
 
-MAIN_LOG_NAME = "./count_result.txt"
-CSV_LOG_NAME = "./count_result.csv"
-XLSX_LOG_NAME = "./count_result.xlsx"
+
+def get_main_log_name(extension: str):
+    valid_task_title = "".join([c for c in glv.TASK_TITLE if c in "\/:*?<>| "])
+
+    return f"./count_result_for_{valid_task_title}.{extension}"
+
 
 # Variables for uh... zero division
 Z = 0.000000001
 
 
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
-    file_log = open(SUB_LOG_ADDRESS + file_name[:-6] + "---" + indel_counter.ref_name + ".txt", "w")
+
+    valid_task_title = "".join([c for c in glv.TASK_TITLE if c in "\/:*?<>| "])
+    valid_tested_file_name = "".join([c for c in file_name[:-6] if c in "\/:*?<>| "])
+    valid_ref_name = "".join([c for c in indel_counter.ref_name if c in "\/:*?<>| "])
+
+    file_log = open(SUB_LOG_ADDRESS +
+                    valid_task_title + "--" + valid_tested_file_name + "--" + valid_ref_name + ".txt", "w")
 
     file_log.write(f""
                    f"# <InDel_Type_Counter {glv.VERSION} Side Log for {file_name}>\n"
@@ -58,7 +67,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
 
 
 def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
-
+    MAIN_LOG_NAME = get_main_log_name("txt")
     file_log = open(MAIN_LOG_NAME, "w")
 
     file_log.write(f"# <InDel_Type_Counter {glv.VERSION} Main Log>\n"
@@ -83,7 +92,8 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype
 
 
 def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], ref_set_list: list[Reference]):
-
+    CSV_LOG_NAME = get_main_log_name("csv")
+    XLSX_LOG_NAME = get_main_log_name("xlsx")
     file_csv = open(CSV_LOG_NAME, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
 
@@ -165,7 +175,7 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Geno
 
 
 def _showing_selected_area_to_text(guide_rna_seq: str):
-
+    # a little hardcoded: not for change...
     pos_line = ""
     ref_line = guide_rna_seq
     selected_area_line = ""
@@ -186,9 +196,9 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
             pos_line += ' '
 
         if (cut_pos - glv.CUT_POS_RADIUS) <= i < cut_pos:
-            selected_area_line += '('
+            selected_area_line += '['
         elif cut_pos <= i < (cut_pos + glv.CUT_POS_RADIUS):
-            selected_area_line += ')'
+            selected_area_line += ']'
         else:
             selected_area_line += ' '
 
@@ -197,7 +207,6 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
     selected_area_line += '    '
 
     new_starting_point = len(ref_line)
-
 
     ref_line += guide_rna_seq
 

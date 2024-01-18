@@ -6,6 +6,7 @@ HOMO_RATIO_MIN = 0.8
 HETERO_RATIO_MIN = 0.35
 THIRD_RATIO_MAX = 0.02
 ERR_RATIO_MAX = 0.1
+ERR_ONLY_WARNING_RATIO_MIN = 0.7
 READ_MIN = 30
 
 # Variables for showing awesome simple result!
@@ -247,14 +248,14 @@ class Genotype:
 
     def __init__(self, indel_counter: InDel_Counter_for_Genotype, sorted_count_tuple_list: list):
 
-        if len(indel_counter) < READ_MIN:
+        if indel_counter.get_len(with_err=False) < READ_MIN:
             self.append_warning("Reads not enough")
 
         # now, set the main genotype
-        if len(sorted_count_tuple_list) < 2:
+        if len(sorted_count_tuple_list) < 2 or \
+                (indel_counter.count_map['err'] / (len(indel_counter) + Z)) > ERR_ONLY_WARNING_RATIO_MIN:
             self.name = "err"
             self.allele1_name = self.allele2_name = 'err'
-
             self.append_warning("Error only")
 
         elif len(sorted_count_tuple_list) < 3:
@@ -263,6 +264,7 @@ class Genotype:
                 if key != 'err':
                     self.allele1_name = self.allele2_name = key
                     self.allele1_ratio = 1.000
+
         else:
             for key, value in sorted_count_tuple_list:
                 if key != 'err':

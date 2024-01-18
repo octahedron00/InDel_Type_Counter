@@ -8,7 +8,7 @@ from Bio import SeqIO
 from src.reference import Reference
 from src.line_set import Line_Set
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
-from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, XLSX_LOG_NAME
+from src.log_writer import write_main_log, write_sub_log, write_main_csv_log
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
@@ -110,7 +110,7 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.option('--score_gap_extend', default=-4,
               help=glv.EXPLANATION_MAP['score_gap_extend'])
 #
-@click.option('-t', '--task_title', default="Task at " + str(datetime.datetime.now()),
+@click.option('-t', '--task_title', default="Task_" + str(datetime.datetime.now())[5:-10],
               help=glv.EXPLANATION_MAP['task_title'])
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
