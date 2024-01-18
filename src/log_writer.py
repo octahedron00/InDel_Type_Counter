@@ -12,7 +12,7 @@ RESULT_LOG_ADDRESS = "./log/"
 
 
 def get_main_log_name(extension: str):
-    valid_task_title = "".join([c for c in glv.TASK_TITLE if c in "\/:*?<>| "])
+    valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
 
     return f"./count_result_for_{valid_task_title}.{extension}"
 
@@ -23,9 +23,9 @@ Z = 0.000000001
 
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
 
-    valid_task_title = "".join([c for c in glv.TASK_TITLE if c in "\/:*?<>| "])
-    valid_tested_file_name = "".join([c for c in file_name[:-6] if c in "\/:*?<>| "])
-    valid_ref_name = "".join([c for c in indel_counter.ref_name if c in "\/:*?<>| "])
+    valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
+    valid_tested_file_name = "".join([c for c in file_name[:-6] if c not in "\/:*?<>| -"])
+    valid_ref_name = "".join([c for c in indel_counter.ref_name if c not in "\/:*?<>| -"])
 
     file_log = open(SUB_LOG_ADDRESS +
                     valid_task_title + "--" + valid_tested_file_name + "--" + valid_ref_name + ".txt", "w")

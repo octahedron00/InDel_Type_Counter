@@ -1,4 +1,4 @@
-VERSION = '1.1.3'
+VERSION = '1.1.4'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -10,8 +10,10 @@ global TASK_TITLE, OPEN_XLSX_AUTO
 
 TASK_TITLE = ""
 OPEN_XLSX_AUTO = False
+DEBUG = False
 EXPLANATION_MAP['task_title'] = "Title for this task"
 EXPLANATION_MAP['open_xlsx_auto'] = "Open the excel log file automatically if finished"
+EXPLANATION_MAP['debug'] = "Debug mode"
 
 
 # 1 variables for formatting the data : will never change

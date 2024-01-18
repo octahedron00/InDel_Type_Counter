@@ -4,11 +4,12 @@ import datetime
 import os
 import click
 from Bio import SeqIO
+import gzip
 
 from src.reference import Reference
 from src.line_set import Line_Set
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
-from src.log_writer import write_main_log, write_sub_log, write_main_csv_log
+from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, get_main_log_name
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
@@ -63,27 +64,37 @@ def get_reference_list_from_file():
 
 def get_file_address_list():
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
-                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
+                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name))
+                    and file_name[-6:] in ('.fastq', 'stq.gz')]
     address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
     return address_list
 
 
 def get_total_number_of_reads(address_list: list[str]):
     total_reads_count = 0
+    reads_count_list = []
     for i, file_name in enumerate(address_list):
+        reads_count = 0
         print(f"\r({i + 1}/{len(address_list)}) reading {file_name}", end="")
 
-        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+        if file_name[-5:] == str("file.fastq.gz")[-5:]:
+            read_raw_iter = SeqIO.parse(gzip.open(str(os.path.join(DATA_ADDRESS, file_name)), "rt"), "fastq")
+        else:
+            read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+
         for _ in read_raw_iter:
+            reads_count += 1
             total_reads_count += 1
+        reads_count_list.append(reads_count)
     print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files                     ")
     print()
-    return total_reads_count
+    return total_reads_count, reads_count_list
 
 
 def key_for_sorting_err(line_set: Line_Set):
     if line_set.indel_type == 'err':
-        return len(line_set)
+        return 1
+        # return len(line_set)
     return 0
 
 
@@ -114,9 +125,12 @@ def key_for_sorting_err(line_set: Line_Set):
               help=glv.EXPLANATION_MAP['task_title'])
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
+@click.option('--debug', default=False, is_flag=True,
+              help=glv.EXPLANATION_MAP['debug'])
 def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
          phred_meaningful_score_min, pam_distance_max,
-         score_match, score_mismatch, score_gap_open, score_gap_extend, task_title, open_xlsx_auto):
+         score_match, score_mismatch, score_gap_open, score_gap_extend,
+         task_title, open_xlsx_auto, debug):
     # set global variables
     glv.ERR_RATIO_MAX = err_ratio_max
     glv.ERR_PADDING_FOR_SEQ = err_padding_for_seq
@@ -133,10 +147,12 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
 
     glv.TASK_TITLE = task_title
     glv.OPEN_XLSX_AUTO = open_xlsx_auto
+    glv.DEBUG = debug
 
     # Get sorted file address list from a folder, list[str]
     address_list = get_file_address_list()
-    print("File list:", address_list)
+    print(f"File list: files with '.fastq.gz' or '.fastq' in {DATA_ADDRESS} only")
+    print(f"File list: {address_list}")
     print()
 
     # get a list[Reference]
@@ -150,11 +166,11 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     # # # count total number of finished number of reads,
     # # # and check the time of initiation
     '''This function will make a text print: opening large file takes some time'''
-    total_reads_count = get_total_number_of_reads(address_list=address_list)
+    total_reads_count, reads_count_list = get_total_number_of_reads(address_list=address_list)
     finish_reads_count = 0
     start_time = datetime.datetime.now()
-    start_time_for_1000_first = datetime.datetime.now()
-    start_time_for_1000_second = datetime.datetime.now()
+    start_time_for_file_before = datetime.datetime.now()
+    start_time_for_file = datetime.datetime.now()
 
     for file_no, file_name in enumerate(address_list):
         '''
@@ -177,11 +193,10 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
                 for each indel_counter in list:
                     if line_set.ref == indel_counter.ref:
                         indel_counter.count(line_set) < count the each indel type
-                
-            
         
         '''
         # # # for counting expected time left
+        start_time_for_file_before = start_time_for_file
         start_time_for_file = datetime.datetime.now()
 
         # build list[InDel_Counter_For_Ref]
@@ -191,8 +206,15 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
             indel_counter.set_file_name(file_name=file_name)
             indel_counter_list.append(indel_counter)
 
+        if file_name[-5:] == str("file.fastq.gz")[-5:]:
+            read_raw_iter = SeqIO.parse(gzip.open(str(os.path.join(DATA_ADDRESS, file_name)), "rt"), "fastq")
+        elif file_name[-5:] == str(".fastq")[-5:]:
+            read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
+        else:
+            print(f"({file_no + 1}/{len(address_list)}) {file_name} is not readable: is it .fastq or .fastq.gz ?")
+            continue
+
         # build list[Bio.SeqRecord]
-        read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
         read_raw_list = [read_raw for read_raw in read_raw_iter]
 
         # build list[Line_Set]
@@ -201,17 +223,14 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
 
             # # # for showing expected time left
             finish_reads_count += 1
-            if finish_reads_count % TIME_LEFT_REFRESH_READS == 0:
-                start_time_for_1000_second = start_time_for_1000_first
-                start_time_for_1000_first = datetime.datetime.now()
 
             if (i % 100) == 0:
                 now_time = datetime.datetime.now()
                 delta_time = now_time - start_time
                 delta_count = finish_reads_count
-                if finish_reads_count >= TIME_LEFT_REFRESH_READS*2:
-                    delta_time = now_time - start_time_for_1000_second
-                    delta_count = TIME_LEFT_REFRESH_READS + (finish_reads_count % TIME_LEFT_REFRESH_READS)
+                if file_no > 0:
+                    delta_time = now_time - start_time_for_file_before
+                    delta_count = i + reads_count_list[file_no-1]
 
                 print(f"\r({file_no + 1}/{len(address_list)}) "
                       f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
@@ -277,7 +296,7 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
 
     #
     if glv.OPEN_XLSX_AUTO:
-        os.system(f"start EXCEL.EXE {XLSX_LOG_NAME}")
+        os.system(f"start EXCEL.EXE {get_main_log_name('xlsx')}")
 
 
 if __name__ == '__main__':

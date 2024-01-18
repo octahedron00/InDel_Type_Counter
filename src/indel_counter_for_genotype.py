@@ -1,5 +1,6 @@
 from src.line_set import Line_Set
 from src.reference import Reference
+import src.globals as glv
 
 # Variables for validation
 HOMO_RATIO_MIN = 0.8
@@ -139,7 +140,7 @@ class InDel_Counter_for_Genotype:
         sorted_best_example_tuple = sorted(self.best_example_map.items(),
                                            key=lambda f: self.count_map[f[0]], reverse=True)
 
-        if genotype.name == 'err' or len(sorted_best_example_tuple) < 2:
+        if len(sorted_best_example_tuple) < 2:
             text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True)+Z)):.3f})\n"
             return text
 
@@ -210,11 +211,12 @@ def get_simple_example_set(line_set: Line_Set):
     rna_len = len(line_set.guide_rna_seq)
 
     ins_up = 0
-    for i in range(rna_pos - rna_len, rna_pos - rna_len - MARGIN_FOR_SAMPLE, -1):
+    for i in range(std_pos, rna_pos - rna_len - MARGIN_FOR_SAMPLE, -1):
         while line_set.ref_line[i - ins_up] == '-':
+            # no worries of 'out of range'
             ins_up += 1
     ins_down = 0
-    for i in range(rna_pos - rna_len + 1, std_pos + pam_len + MARGIN_FOR_SAMPLE, 1):
+    for i in range(std_pos + 1, std_pos + pam_len + MARGIN_FOR_SAMPLE, 1):
         while line_set.ref_line[i + ins_down] == '-':
             ins_down += 1
 
@@ -229,6 +231,15 @@ def get_simple_example_set(line_set: Line_Set):
 
     simple_pos_line = line_set.pos_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
+
+    if glv.DEBUG:
+        print(line_set.read_name)
+        print(std_pos, rna_pos, rna_len, ins_up, ins_down)
+        print(simple_pos_line)
+        print(simple_ref_line)
+        print(simple_match_line)
+        print(simple_read_line)
+        print()
 
     return {"ref_line": simple_ref_line,
             "read_line": simple_read_line,
@@ -251,9 +262,11 @@ class Genotype:
         if indel_counter.get_len(with_err=False) < READ_MIN:
             self.append_warning("Reads not enough")
 
+        if (indel_counter.count_map['err'] / (len(indel_counter) + Z)) > ERR_ONLY_WARNING_RATIO_MIN:
+            self.append_warning("Error ratio too high")
+
         # now, set the main genotype
-        if len(sorted_count_tuple_list) < 2 or \
-                (indel_counter.count_map['err'] / (len(indel_counter) + Z)) > ERR_ONLY_WARNING_RATIO_MIN:
+        if len(sorted_count_tuple_list) < 2:
             self.name = "err"
             self.allele1_name = self.allele2_name = 'err'
             self.append_warning("Error only")
