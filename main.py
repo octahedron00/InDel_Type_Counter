@@ -13,6 +13,7 @@ from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, ge
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
+USED_DATA_ADDRESS = "./data/used/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
@@ -172,6 +173,12 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     start_time_for_file_before = datetime.datetime.now()
     start_time_for_file = datetime.datetime.now()
 
+
+    # to show that the program is running by someone else in the folder:
+    # this will make a noname file of 'using' the folder.
+    file = open(os.path.join(DATA_ADDRESS, ".program_is_running_here"), 'w')
+    file.close()
+
     for file_no, file_name in enumerate(address_list):
         '''
         For each file, This happens:
@@ -213,6 +220,10 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
         else:
             print(f"({file_no + 1}/{len(address_list)}) {file_name} is not readable: is it .fastq or .fastq.gz ?")
             continue
+
+        # # # move the file to the 'used' folder, as quick as possible
+        # os.replace(os.path.join(DATA_ADDRESS, file_name), os.path.join(USED_DATA_ADDRESS, file_name))
+        # not working...
 
         # build list[Bio.SeqRecord]
         read_raw_list = [read_raw for read_raw in read_raw_iter]
@@ -285,14 +296,20 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})                              ")
+
         # end.
 
     # Writing total log
     write_main_log(indel_counter_list_list=all_indel_counter_list_list, total_length=total_reads_count)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=reference_list)
+    if glv.DEBUG:
+        write_debug_log(indel_counter_list_list=all_indel_counter_list_list)
 
     # # for showing time used
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
+
+    # # delete the file of 'program is running here'
+    os.remove(os.path.join(DATA_ADDRESS, ".program_is_running_here"))
 
     #
     if glv.OPEN_XLSX_AUTO:
