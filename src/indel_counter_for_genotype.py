@@ -190,7 +190,7 @@ class InDel_Counter_for_Genotype:
 
         text += f"\n" \
                 f"{wt_pos}\n" \
-                f"{wt_seq} : WT      Total without err: {self.get_len(with_err=False)}\n" \
+                f"{wt_seq} : Reference      {self.get_len(with_err=False)}: Total without err\n" \
                 f"\n"
         for key in sample_set.keys():
             text += f"{sample_set[key]['read_line']} : {key:<8}" \

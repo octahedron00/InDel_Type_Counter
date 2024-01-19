@@ -25,7 +25,7 @@ Z = 0.000000001
 def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
 
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
-    if file_name[-5:] == str(".fastq")[-5]:
+    if file_name[-5:] == str(".fastq")[-5:]:
         valid_tested_file_name = "".join([c for c in file_name[:-6] if c not in "\/:*?<>| -"])
     else:
         valid_tested_file_name = "".join([c for c in file_name[:-9] if c not in "\/:*?<>| -"])
