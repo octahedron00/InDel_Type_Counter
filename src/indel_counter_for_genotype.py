@@ -231,15 +231,15 @@ def get_simple_example_set(line_set: Line_Set):
 
     simple_pos_line = line_set.pos_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
-
-    if glv.DEBUG:
-        print(line_set.read_name)
-        print(std_pos, rna_pos, rna_len, ins_up, ins_down)
-        print(simple_pos_line)
-        print(simple_ref_line)
-        print(simple_match_line)
-        print(simple_read_line)
-        print()
+    #
+    # if glv.DEBUG:
+    #     print(line_set.read_name)
+    #     print(std_pos, rna_pos, rna_len, ins_up, ins_down)
+    #     print(simple_pos_line)
+    #     print(simple_ref_line)
+    #     print(simple_match_line)
+    #     print(simple_read_line)
+    #     print()
 
     return {"ref_line": simple_ref_line,
             "read_line": simple_read_line,

@@ -35,25 +35,6 @@ def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
     return pri, pre
 
 
-def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part = ''):
-    if indel_i < 0:
-        return 'err'
-
-    if indel_i == indel_d == 1 and glv.DEBUG:
-        return f"1I1D{phred_part}"
-
-    if indel_i == 0:
-        if indel_d == 0:
-            return 'WT'
-        else:
-            return f"{indel_d}D{pos}"
-    else:
-        if indel_d == 0:
-            return f"{indel_i}I{pos}"
-        else:
-            return f"{indel_i}I{indel_d}D{pos}"
-
-
 class Line_Set:
     '''
     class Line_Set
@@ -408,4 +389,20 @@ class _InDel:
         self.indel_reason = indel_reason
 
 
+def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part = ''):
+    if indel_i < 0:
+        return 'err'
 
+    if indel_i == indel_d == 1 and glv.DEBUG:
+        return f"1I1D{pos}{phred_part}"
+
+    if indel_i == 0:
+        if indel_d == 0:
+            return 'WT'
+        else:
+            return f"{indel_d}D{pos}"
+    else:
+        if indel_d == 0:
+            return f"{indel_i}I{pos}"
+        else:
+            return f"{indel_i}I{indel_d}D{pos}"

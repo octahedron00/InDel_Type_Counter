@@ -47,24 +47,6 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    f"\n"
                    f"\n")
 
-    if glv.DEBUG:
-        print("DEBUG_WRITING")
-        pos_phred_score = [0]*25
-        pos_error_count = [0]*25
-
-        for line_set in line_set_list:
-            for i in range(-10, 10):
-                pos_phred_score[i] += (ord(line_set.phred_line[i])-glv.PHRED_ENCODING)
-
-                if line_set.match_line[i] != '|':
-                    pos_error_count[i] += 1
-
-        file_log.write(f"<debug mode activated: extracting data>\n"
-                       f"phred_score_sum = {pos_phred_score}\n"
-                       f"error_count_sum = {pos_error_count}\n"
-                       f"\n"
-                       f"\n")
-
     file_log.write(indel_counter.get_simple_example_text())
     file_log.write("\n"
                    "\n"
@@ -264,10 +246,16 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
            f"{selected_area_line}\n"
 
 
-def write_debug_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
+def write_debug_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], debug_data: dict[dict]):
     debug_log_name = get_main_log_name("debug.txt")
 
     with open(debug_log_name, 'w') as file_log:
+        for file_name, data_dict in debug_data.items():
+            file_log.write(f"\n{file_name}\n")
+            for key, value in data_dict.items():
+                file_log.write(f"\t{key}: {value}\n")
+
+        file_log.write("\n\n")
         for indel_counter_list in indel_counter_list_list:
             for indel_counter in indel_counter_list:
                 file_log.write(f"\n"
@@ -275,7 +263,7 @@ def write_debug_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotyp
 
                 for key, value in indel_counter.get_sorted_count_map_list():
                     indel_i, indel_d, indel_length, indel_pos = get_indel_type_text_unpacked(key)
-                    file_log.write(f"{key}\t{indel_i}\t{indel_d}\t{indel_length}\t{indel_pos}\n")
+                    file_log.write(f"{key}\t{indel_i}\t{indel_d}\t{indel_length}\t{indel_pos}\t{value}\n")
 
 
 def get_indel_type_text_unpacked(indel_type: str):
@@ -292,7 +280,7 @@ def get_indel_type_text_unpacked(indel_type: str):
 
     indel_type_lines = indel_type
     for letter in set_of_letter_between_number:
-        indel_type_lines.replace(letter, '\n'+letter+'\n')
+        indel_type_lines = indel_type_lines.replace(letter, '\n'+letter+'\n')
 
     str_set = indel_type_lines.splitlines(keepends=False)
 

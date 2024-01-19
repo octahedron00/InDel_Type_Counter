@@ -162,6 +162,8 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     # for total result, making list[list[InDel_Counter]]
     all_indel_counter_list_list = []
 
+    debug_data = {}
+
     # # # for counting expected time left,
     # # # count total number of reads,
     # # # count total number of finished number of reads,
@@ -291,6 +293,27 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
             write_sub_log(line_set_list=[l for l in line_set_list if l.ref_name == indel_counter.ref_name],
                           indel_counter=indel_counter, file_name=file_name)
 
+        # # for debug data
+        if glv.DEBUG:
+            pos_phred_score = [0] * 25
+            pos_error_count = [0] * 25
+
+            for line_set in line_set_list:
+                if len(line_set) < 20:
+                    print(line_set)
+                    continue
+                for i in range(-10, 10):
+                    pos_phred_score[i] += (ord(line_set.phred_line[i]) - glv.PHRED_ENCODING)
+
+                    if line_set.match_line[i] != '|':
+                        pos_error_count[i] += 1
+
+            debug_data[file_name] = {
+                'length': len(line_set_list),
+                'pos_phred_score': pos_phred_score,
+                'pos_error_count': pos_error_count
+            }
+
         # # for showing time used
         end_time_for_file = datetime.datetime.now()
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
@@ -303,7 +326,7 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     write_main_log(indel_counter_list_list=all_indel_counter_list_list, total_length=total_reads_count)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=reference_list)
     if glv.DEBUG:
-        write_debug_log(indel_counter_list_list=all_indel_counter_list_list)
+        write_debug_log(indel_counter_list_list=all_indel_counter_list_list, debug_data=debug_data)
 
     # # for showing time used
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
