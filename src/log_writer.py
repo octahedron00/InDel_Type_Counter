@@ -246,16 +246,19 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
            f"{selected_area_line}\n"
 
 
-def write_debug_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], debug_data: dict[dict]):
-    debug_log_name = get_main_log_name("debug.txt")
+def write_raw_data_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], debug_data: dict[dict]):
+    debug_log_name = get_main_log_name(".raw")
 
     with open(debug_log_name, 'w') as file_log:
-        for file_name, data_dict in debug_data.items():
-            file_log.write(f"\n{file_name}\n")
-            for key, value in data_dict.items():
-                file_log.write(f"\t{key}: {value}\n")
+        if glv.DEBUG:
+            for file_name, data_dict in debug_data.items():
+                file_log.write(f"\n{file_name}\n")
+                for key, value in data_dict.items():
+                    file_log.write(f"\t{key}: {value}\n")
+            file_log.write("\n\n")
 
-        file_log.write("\n\n")
+        file_log.write(f"indel_type\tinsertion\tdeletion\tindel_length\tindel_position\t# count\n")
+
         for indel_counter_list in indel_counter_list_list:
             for indel_counter in indel_counter_list:
                 file_log.write(f"\n"

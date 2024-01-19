@@ -9,7 +9,7 @@ import gzip
 from src.reference import Reference
 from src.line_set import Line_Set
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
-from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, get_main_log_name, write_debug_log
+from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, get_main_log_name, write_raw_data_log
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
@@ -325,8 +325,7 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     # Writing total log
     write_main_log(indel_counter_list_list=all_indel_counter_list_list, total_length=total_reads_count)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=reference_list)
-    if glv.DEBUG:
-        write_debug_log(indel_counter_list_list=all_indel_counter_list_list, debug_data=debug_data)
+    write_raw_data_log(indel_counter_list_list=all_indel_counter_list_list, debug_data=debug_data)
 
     # # for showing time used
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
