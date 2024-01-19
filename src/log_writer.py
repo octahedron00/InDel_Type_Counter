@@ -1,5 +1,6 @@
 import datetime
 import csv
+import re
 from xlsxwriter.workbook import Workbook
 
 from src.line_set import Line_Set
@@ -43,6 +44,23 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
                    f"\n"
                    f"\n")
 
+    if glv.DEBUG:
+        pos_phred_score = [0]*25
+        pos_error_count = [0]*25
+
+        for line_set in line_set_list:
+            for i in range(-10, 10):
+                pos_phred_score[i] += (ord(line_set.phred_line[i])-glv.PHRED_ENCODING)
+
+                if line_set.match_line[i] != '|':
+                    pos_error_count[i] += 1
+
+        file_log.write(f"<debug mode activated: extracting data>\n"
+                       f"phred_score_sum = {pos_phred_score}\n"
+                       f"error_count_sum = {pos_error_count}\n"
+                       f"\n"
+                       f"\n")
+
     file_log.write(indel_counter.get_simple_example_text())
     file_log.write("\n"
                    "\n"
@@ -66,16 +84,18 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
     file_log.close()
 
 
-def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
-    MAIN_LOG_NAME = get_main_log_name("txt")
-    file_log = open(MAIN_LOG_NAME, "w")
+def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], total_length: int):
+    main_log_name = get_main_log_name("txt")
+    file_log = open(main_log_name, "w")
 
     file_log.write(f"# <InDel_Type_Counter {glv.VERSION} Main Log>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
                    f"# \n"
                    f"# Task Title: {glv.TASK_TITLE}\n"
                    f"\n"
-                   f"{glv.get_text_of_global_variables()}"
+                   f"{glv.get_text_of_global_variables()}\n"
+                   f"\n"
+                   f"total length: {total_length}\n"
                    f"\n"
                    f"\n")
 
@@ -92,9 +112,9 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype
 
 
 def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], ref_set_list: list[Reference]):
-    CSV_LOG_NAME = get_main_log_name("csv")
-    XLSX_LOG_NAME = get_main_log_name("xlsx")
-    file_csv = open(CSV_LOG_NAME, 'w', newline="")
+    csv_log_name = get_main_log_name("csv")
+    xlsx_log_name = get_main_log_name("xlsx")
+    file_csv = open(csv_log_name, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
 
     file_csv_writer.writerow([f"<InDel_Type_Counter {glv.VERSION} Main Log>"])
@@ -149,11 +169,11 @@ def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Geno
 
     #
     # Write Excel file: CSV is not working well in Excel software
-    workbook = Workbook(XLSX_LOG_NAME)
+    workbook = Workbook(xlsx_log_name)
     worksheet = workbook.add_worksheet()
 
     italic_format = workbook.add_format({'italic': True, 'font_color': 'silver'})
-    with open(CSV_LOG_NAME, 'rt', encoding='utf8') as f:
+    with open(csv_log_name, 'rt', encoding='utf8') as f:
         reader = csv.reader(f)
         for r, row in enumerate(reader):
             cell_format = workbook.add_format({})
@@ -238,3 +258,54 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
            f"{pos_line}\n" \
            f"{ref_line}\n" \
            f"{selected_area_line}\n"
+
+
+def write_debug_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]]):
+    debug_log_name = get_main_log_name("debug.txt")
+
+    with open(debug_log_name, 'w') as file_log:
+        for indel_counter_list in indel_counter_list_list:
+            for indel_counter in indel_counter_list:
+                file_log.write(f"\n"
+                               f"{indel_counter.file_name}--{indel_counter.ref_name}\n")
+
+                for key, value in indel_counter.get_sorted_count_map_list():
+                    indel_i, indel_d, indel_length, indel_pos = get_indel_type_text_unpacked(key)
+                    file_log.write(f"{key}\t{indel_i}\t{indel_d}\t{indel_length}\t{indel_pos}\n")
+
+
+def get_indel_type_text_unpacked(indel_type: str):
+    indel_i = 0
+    indel_d = 0
+    indel_length = 0
+    indel_pos = 0
+
+    if indel_type in ('err', 'WT'):
+        return indel_i, indel_d, indel_length, indel_pos
+
+    set_of_letter_between_number = ('I', 'D', ':', ';', ',', 'F')
+    # Including phred score to show
+
+    indel_type_lines = indel_type
+    for letter in set_of_letter_between_number:
+        indel_type_lines.replace(letter, '\n'+letter+'\n')
+
+    str_set = indel_type_lines.splitlines(keepends=False)
+
+    a = 0
+    for s in str_set:
+        if s == 'I':
+            indel_i = a
+            a = 0
+        elif s == 'D':
+            indel_d = a
+            a = 0
+        elif re.match('^-?\d+$', s):
+            a = int(s)
+
+    indel_pos = a
+    indel_length = max(indel_i, indel_d)
+
+    return indel_i, indel_d, indel_length, indel_pos
+
+

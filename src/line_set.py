@@ -35,9 +35,13 @@ def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
     return pri, pre
 
 
-def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int):
+def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part = ''):
     if indel_i < 0:
         return 'err'
+
+    if indel_i == indel_d == 1 and glv.DEBUG:
+        return f"1I1D{phred_part}"
+
     if indel_i == 0:
         if indel_d == 0:
             return 'WT'
@@ -382,7 +386,7 @@ class _InDel:
                 if ((cut_pos - glv.CUT_POS_RADIUS) < p2) and (p1 < (cut_pos + glv.CUT_POS_RADIUS)):
                     if indel_d == indel_i == indel_length == 1:
                         if (ord(phred_line[p1]) - glv.PHRED_ENCODING) > glv.PHRED_MEANINGFUL_MIN:
-                            indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos)
+                            indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos, phred_line[p1])
                             indel_pos = p2 - std_pos
                             indel_reason = "Indel position confirmed by guide RNA and signal score"
                     else:
