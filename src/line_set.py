@@ -23,15 +23,17 @@ def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
             k, is_good = 0, False
             pri = i
             for j, n in enumerate(guide_rna_seq):
-                while ref_line[i + j + k] == '-':
+                while ref_line[i + j + k] == '-' and (i+j+k) < len(ref_line):
                     k += 1
-                if ref_line[i + j + k] != n:
+                if (i+j+k) >= len(ref_line) or ref_line[i + j + k] != n:
                     break
                 if j == (len(guide_rna_seq) - 1):
                     is_good = True
                     pre = (i + j + k + 1)
             if is_good:
                 break
+            else:
+                pri, pre = -1, -1
     return pri, pre
 
 
@@ -345,7 +347,7 @@ class _InDel:
         indel_pos = -9999
 
         for i, m in enumerate(match_line + str("X" * len(match_line))):
-            if i < 2:
+            if i < glv.ERR_PADDING_FOR_SEQ:
                 continue
             if i >= (len(phred_line) - glv.ERR_PADDING_FOR_SEQ):
                 break
