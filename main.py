@@ -6,6 +6,9 @@ import click
 from Bio import SeqIO
 import gzip
 
+# type hinting for lower version of python
+from typing import List, Dict
+
 from src.reference import Reference
 from src.line_set import Line_Set
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
@@ -71,7 +74,7 @@ def get_file_address_list():
     return address_list
 
 
-def get_total_number_of_reads(address_list: list[str]):
+def get_total_number_of_reads(address_list: List[str]):
     total_reads_count = 0
     reads_count_list = []
     for i, file_name in enumerate(address_list):
@@ -174,7 +177,6 @@ def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
     start_time = datetime.datetime.now()
     start_time_for_file_before = datetime.datetime.now()
     start_time_for_file = datetime.datetime.now()
-
 
     # to show that the program is running by someone else in the folder:
     # this will make a noname file of 'using' the folder.

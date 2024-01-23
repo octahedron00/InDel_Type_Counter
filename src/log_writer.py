@@ -3,6 +3,9 @@ import csv
 import re
 from xlsxwriter.workbook import Workbook
 
+# type hinting for lower version of python
+from typing import List, Dict
+
 from src.line_set import Line_Set
 from src.reference import Reference
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
@@ -22,7 +25,7 @@ def get_main_log_name(extension: str):
 Z = 0.000000001
 
 
-def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
+def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
 
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
     if file_name[-5:] == str(".fastq")[-5:]:
@@ -70,7 +73,7 @@ def write_sub_log(line_set_list: list[Line_Set], indel_counter: InDel_Counter_fo
     file_log.close()
 
 
-def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], total_length: int):
+def write_main_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], total_length: int):
     main_log_name = get_main_log_name("txt")
     file_log = open(main_log_name, "w")
 
@@ -97,7 +100,7 @@ def write_main_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype
     file_log.close()
 
 
-def write_main_csv_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], ref_set_list: list[Reference]):
+def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], ref_set_list: List[Reference]):
     csv_log_name = get_main_log_name("csv")
     xlsx_log_name = get_main_log_name("xlsx")
     file_csv = open(csv_log_name, 'w', newline="")
@@ -246,7 +249,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
            f"{selected_area_line}\n"
 
 
-def write_raw_data_log(indel_counter_list_list: list[list[InDel_Counter_for_Genotype]], debug_data: dict[dict]):
+def write_raw_data_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], debug_data: Dict[str, Dict]):
     debug_log_name = get_main_log_name(".raw")
 
     with open(debug_log_name, 'w') as file_log:
