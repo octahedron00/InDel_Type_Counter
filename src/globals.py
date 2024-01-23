@@ -1,4 +1,4 @@
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -6,13 +6,15 @@ EXPLANATION_MAP = dict()
 EXPLANATION_MAP[''] = ""
 
 # 2 variables for user experience
-global TASK_TITLE, OPEN_XLSX_AUTO
+global TASK_TITLE, OPEN_XLSX_AUTO, READ_IGNORE, DEBUG
 
 TASK_TITLE = ""
 OPEN_XLSX_AUTO = False
+READ_IGNORE = ''
 DEBUG = False
 EXPLANATION_MAP['task_title'] = "Title for this task"
 EXPLANATION_MAP['open_xlsx_auto'] = "Open the excel log file automatically if finished"
+EXPLANATION_MAP['read_ignore'] = "ignoring some seq: R2 to ignore all Read 2"
 EXPLANATION_MAP['debug'] = "Debug mode"
 
 

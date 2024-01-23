@@ -70,6 +70,10 @@ def get_file_address_list():
     address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name))
                     and file_name[-6:] in ('.fastq', 'stq.gz')]
+
+    if len(glv.READ_IGNORE) > 0:
+        address_list = [address for address in address_list if address.find(glv.READ_IGNORE) < 0]
+
     address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
     return address_list
 
@@ -103,6 +107,8 @@ def key_for_sorting_err(line_set: Line_Set):
 
 
 @click.command()
+@click.option('-n', '--read_ignore', default='',
+              help=glv.EXPLANATION_MAP['read_ignore'])
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])
 @click.option('-p', '--err_padding_for_seq', default=1,
@@ -131,11 +137,13 @@ def key_for_sorting_err(line_set: Line_Set):
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
 @click.option('--debug', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['debug'])
-def main(err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
+def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_pos_radius,
          phred_meaningful_score_min, pam_distance_max,
          score_match, score_mismatch, score_gap_open, score_gap_extend,
          task_title, open_xlsx_auto, debug):
     # set global variables
+    glv.READ_IGNORE = read_ignore
+
     glv.ERR_RATIO_MAX = err_ratio_max
     glv.ERR_PADDING_FOR_SEQ = err_padding_for_seq
     glv.CUT_POS_FROM_PAM = cut_pos_from_pam
