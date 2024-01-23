@@ -1,4 +1,4 @@
-VERSION = '1.2.1'
+VERSION = '1.2.3'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -10,11 +10,11 @@ global TASK_TITLE, OPEN_XLSX_AUTO, READ_IGNORE, DEBUG
 
 TASK_TITLE = ""
 OPEN_XLSX_AUTO = False
-READ_IGNORE = ''
+READ_IGNORE = 'R2'
 DEBUG = False
 EXPLANATION_MAP['task_title'] = "Title for this task"
 EXPLANATION_MAP['open_xlsx_auto'] = "Open the excel log file automatically if finished"
-EXPLANATION_MAP['read_ignore'] = "ignoring some seq: R2 to ignore all Read 2"
+EXPLANATION_MAP['read_ignore'] = "ignoring some seq: R2 to ignore all Read 2(default), '' to ignore nothing"
 EXPLANATION_MAP['debug'] = "Debug mode"
 
 
@@ -49,9 +49,9 @@ GAP_OPEN = -50
 GAP_EXTEND = -4
 EXPLANATION_MAP['score_match'] = "Score for align: for Match"
 EXPLANATION_MAP['score_mismatch'] = "Score for align: for Mismatch"
-EXPLANATION_MAP['score_gap_open'] = "Score for align: for Gap Open; " \
+EXPLANATION_MAP['score_gap_open'] = "Score for align: for Gap Open"
+EXPLANATION_MAP['score_gap_extend'] = "Score for align: for Gap Extension; " \
                                     "low penalty for 'gaps' will make fake indels more often"
-EXPLANATION_MAP['score_gap_extend'] = "Score for align: for Gap Extension"
 
 
 # for generating align matrix

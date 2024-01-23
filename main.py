@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/python3
 
 import datetime
 import os
@@ -107,7 +107,7 @@ def key_for_sorting_err(line_set: Line_Set):
 
 
 @click.command()
-@click.option('-n', '--read_ignore', default='',
+@click.option('-n', '--read_ignore', default='R2',
               help=glv.EXPLANATION_MAP['read_ignore'])
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])
