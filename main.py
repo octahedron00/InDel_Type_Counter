@@ -7,7 +7,7 @@ from Bio import SeqIO
 import gzip
 
 # type hinting for lower version of python
-from typing import List, Dict
+from typing import List
 
 from src.reference import Reference
 from src.line_set import Line_Set
@@ -20,8 +20,6 @@ USED_DATA_ADDRESS = "./data/used/"
 GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
-
-TIME_LEFT_REFRESH_READS = 3000
 
 # with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
 # > total 800 nt of ref, 150 nt for a line: 40,000,000 for a second.
@@ -131,7 +129,7 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.option('--score_gap_extend', default=-4,
               help=glv.EXPLANATION_MAP['score_gap_extend'])
 #
-@click.option('-t', '--task_title', default="Task_" + str(datetime.datetime.now())[5:-10],
+@click.option('-t', '--task_title', default="task_" + str(datetime.datetime.now())[5:-10],
               help=glv.EXPLANATION_MAP['task_title'])
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
@@ -187,7 +185,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     start_time_for_file = datetime.datetime.now()
 
     # to show that the program is running by someone else in the folder:
-    # this will make a noname file of 'using' the folder.
+    # this will make a no_name file of 'using' the folder.
     file = open(os.path.join(DATA_ADDRESS, ".program_is_running_here"), 'w')
     file.close()
 
@@ -328,7 +326,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
         end_time_for_file = datetime.datetime.now()
         print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
-              f"(length: {len(line_set_list)})                              ")
+              f"(length: {len(line_set_list)})       ")
 
         # end.
 

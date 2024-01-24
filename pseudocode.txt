@@ -13,92 +13,84 @@ Dependencies:
     csv, xlsxwriter
         for writing excel-type log file
 
-    datetime, os,
-
-class Line_Set
-    내부 데이터들 넣어주기.
-    스스로 아예 init이 가능하도록?
-    내부에 함수들을 다 끼워버릴까?
-
-
-기본 main.
-
-    reference_list = get_references_from_file()
+    datetime, os, gzip, typing
 
 
 
-    for data_file
-        for data_read
-            find_gene()
+main.py __init__:
 
-        for line_set,
-            count_indel_type()
+    reference_list = get_references_from_file(REF_SET_ADDRESS)
 
-        line_set.sort(length(line_set))
+    data_file_list = get_file_list(DATA_ADDRESS)
 
-        for gene
-            make_log()
-            for line_set
-                if line_set_gene == gene:
-                    print
+    all_indel_counter_list_list = []
 
 
+    for data_file in data_file_list:
+
+        line_set_list = []
+
+        for data_read in data_file =
+            line_set = get_best_line_set(data_read, reference_list)
+            line_set_list.append(line_set)
+
+        indel_counter_list = []
+
+        for reference in reference_list:
+            indel_counter = new InDel_Counter_For_Genotype(data_file, reference)
+            indel_counter_list.append(indel_counter)
+
+        for line_set in line_set_list:
+            for indel_counter in indel_counter_list:
+                if line_set.ref_name == indel_counter.ref_name:
+                    indel_counter.count(line_set)
 
 
+        line_set.sort()
 
-find gene:
-    for gene,
-        make line_set:
-            align
-            find main indel
-            find score
-    비교 score
+        for indel_counter in indel_counter_list:
+            counter_line_set_list = []
 
+            for line_set in line_set_list:
+                if line_set.ref_name == indel_counter.ref_name:
+                    counter_line_set_list.append(line_set)
 
+            write_sub_log(counter_line_set_list, indel_counter)
 
-    find gene(align) -> find indel -> find score -> find
+        all_indel_counter_list_list.append(indel_counter_list)
 
+        # end for each file
 
+    write_main_log(all_indel_counter_list_list)
+    write_main_csv_log(all_indel_counter_list_list, reference_list)
+    write_raw_data_log(all_indel_counter_list_list)
 
-def main(){
-
-    address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
-                    if os.path.isfile(os.path.join(DATA_ADDRESS, file_name)) and file_name[-6:] == '.fastq']
-
-    ref_raw_list = list(SeqIO.parse(REF_SET_ADDRESS, "fasta"))
-    g_rna_seq_list = list(SeqIO.parse(GUIDE_RNA_SET_ADDRESS, "fasta"))
-
-
-    g_rna_seq = read_g_rna(GUIDE_RNA_ADDRESS)
-
-    # For each file, this will read, align and build the line set.
-    # Also, the line set will be used to count the indels, and making the result.
-
-    indel_count_total = {}
-
-    for file_name in address_list:
-        seq_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
-
-        seq_raw_list = []
-        for item in seq_raw_iter:
-            seq_raw_list.append(item)
-
-        print(f"for {file_name}:")
-        line_set_list_dict = get_best_align_line_set_list_dict(ref_raw_list, seq_raw_list, g_rna_seq_list)
-
-        # line_set = {name, (pos, ref, match, seq, phred)_line, indel_type, align_score, reason}
-
-        indel_count_for_file_dict = get_indel_count_for_file_dict(line_set_list_dict)
-
-        indel_count_total[file_name] = indel_count_for_file_dict
-
-        write_gene_seq_log_for_file(file_name, line_set_list_dict, indel_count_for_file_dict)
-        write_error_seq_log_for_file(file_name, line_set_list_dict, indel_count_for_file_dict)
-
-    # write_result_main_log(indel_count_total)
+    # end
 
 
 
-}
+
+
+fun get_best_line_set(data_read, reference_list):
+    possible_line_set_list = []
+
+    for reference in reference_list:
+        possible_line_set = Line_Set(data_read, reference)
+        possible_line_set_list.append(possible_line_set)
+
+    best_line_set = possible_line_set_list[0]
+
+    for possible_line_set in possible_line_set_list:
+        if best_line_set.score < possible_line_set:
+            best_line_set = possible_line_set
+
+    return best_line_set
+
+
+
+class Line_Set:
+
+    def init(data_read, reference):
+
 
 

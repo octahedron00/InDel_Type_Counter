@@ -18,7 +18,7 @@ RESULT_LOG_ADDRESS = "./log/"
 def get_main_log_name(extension: str):
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
 
-    return f"./count_result_for_{valid_task_title}.{extension}"
+    return f"./{valid_task_title}_count_result.{extension}"
 
 
 # Variables for uh... zero division
@@ -250,7 +250,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
 
 
 def write_raw_data_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], debug_data: Dict[str, Dict]):
-    debug_log_name = get_main_log_name(".raw")
+    debug_log_name = get_main_log_name("raw")
 
     with open(debug_log_name, 'w') as file_log:
         if glv.DEBUG:

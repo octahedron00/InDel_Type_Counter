@@ -1,4 +1,4 @@
-VERSION = '1.2.3'
+VERSION = '1.2.4'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -14,7 +14,8 @@ READ_IGNORE = 'R2'
 DEBUG = False
 EXPLANATION_MAP['task_title'] = "Title for this task"
 EXPLANATION_MAP['open_xlsx_auto'] = "Open the excel log file automatically if finished"
-EXPLANATION_MAP['read_ignore'] = "ignoring some seq: R2 to ignore all Read 2(default), '' to ignore nothing"
+EXPLANATION_MAP['read_ignore'] = "ignoring some files with this in its name: " \
+                                 "R2 to ignore all Read 2(default), '' to ignore nothing"
 EXPLANATION_MAP['debug'] = "Debug mode"
 
 
