@@ -28,14 +28,14 @@ REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 def get_best_line_set(read: SeqIO.SeqRecord, reference_list: list):
     if len(reference_list) == 0:
         return None
-    best_line_set = Line_Set(read_raw=read, ref_set=reference_list[0])
+    best_line_set = Line_Set(read_raw=read, reference=reference_list[0])
 
-    for ref_set in reference_list:
-        test_line_set = Line_Set(read_raw=read, ref_set=ref_set)
+    if len(reference_list) > 1:
+        for reference in reference_list[1:]:
+            test_line_set = Line_Set(read_raw=read, reference=reference)
 
-        if test_line_set.score > best_line_set.score:
-            best_line_set = test_line_set
-
+            if test_line_set.score > best_line_set.score:
+                best_line_set = test_line_set
     return best_line_set
 
 
@@ -58,31 +58,31 @@ def get_reference_list_from_file():
     for i, ref_raw in enumerate(ref_raw_list):
         if i >= len(g_rna_raw_list):
             i = len(g_rna_raw_list) - 1
-        ref_set = Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
-        reference_list.append(ref_set)
+        reference = Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
+        reference_list.append(reference)
 
     return reference_list
 
 
-def get_file_address_list():
-    address_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
+def get_file_data_file_list():
+    data_file_list = [file_name for file_name in os.listdir(DATA_ADDRESS)
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name))
                     and file_name[-6:] in ('.fastq', 'stq.gz')]
 
     for ignore_text in glv.READ_IGNORE:
         if len(ignore_text) > 0:
-            address_list = [address for address in address_list if address.find(ignore_text) < 0]
+            data_file_list = [address for address in data_file_list if address.find(ignore_text) < 0]
 
-    address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
-    return address_list
+    data_file_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
+    return data_file_list
 
 
-def get_total_number_of_reads(address_list: List[str]):
+def get_total_number_of_reads(data_file_list: List[str]):
     total_reads_count = 0
     reads_count_list = []
-    for i, file_name in enumerate(address_list):
+    for i, file_name in enumerate(data_file_list):
         reads_count = 0
-        print(f"\r({i + 1}/{len(address_list)}) reading {file_name}", end="")
+        print(f"\r({i + 1}/{len(data_file_list)}) reading {file_name}", end="")
 
         if file_name[-5:] == str("file.fastq.gz")[-5:]:
             read_raw_iter = SeqIO.parse(gzip.open(str(os.path.join(DATA_ADDRESS, file_name)), "rt"), "fastq")
@@ -93,7 +93,7 @@ def get_total_number_of_reads(address_list: List[str]):
             reads_count += 1
             total_reads_count += 1
         reads_count_list.append(reads_count)
-    print(f"\rTotal reads :{total_reads_count} for {len(address_list)} files                     ")
+    print(f"\rTotal reads :{total_reads_count} for {len(data_file_list)} files                     ")
     print()
     return total_reads_count, reads_count_list
 
@@ -108,6 +108,7 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.command()
 @click.option('-x', '--read_ignore', default=['R2', 'Undetermined'], multiple=True,
               help=glv.EXPLANATION_MAP['read_ignore'])
+#
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])
 @click.option('-p', '--err_padding_for_seq', default=1,
@@ -116,16 +117,16 @@ def key_for_sorting_err(line_set: Line_Set):
               help=glv.EXPLANATION_MAP['cut_pos_from_pam'])
 @click.option('-r', '--cut_pos_radius', default=5,
               help=glv.EXPLANATION_MAP['cut_pos_radius'])
-#
 @click.option('-s', '--phred_meaningful_score_min', default=30,
               help=glv.EXPLANATION_MAP['phred_meaningful_score_min'])
+#
 @click.option('--pam_distance_max', default=5,
               help=glv.EXPLANATION_MAP['pam_distance_max'])
 @click.option('--score_match', default=2,
               help=glv.EXPLANATION_MAP['score_match'])
 @click.option('--score_mismatch', default=-1,
               help=glv.EXPLANATION_MAP['score_mismatch'])
-@click.option('--score_gap_open', default=-50,
+@click.option('--score_gap_open', default=-30,
               help=glv.EXPLANATION_MAP['score_gap_open'])
 @click.option('--score_gap_extend', default=-4,
               help=glv.EXPLANATION_MAP['score_gap_extend'])
@@ -161,9 +162,10 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     glv.DEBUG = debug
 
     # Get sorted file address list from a folder, list[str]
-    address_list = get_file_address_list()
+    data_file_list = get_file_data_file_list()
     print(f"File list: files with '.fastq.gz' or '.fastq' in {DATA_ADDRESS} only")
-    print(f"File list: {address_list}")
+    print(f"File list: ignoring keyword {glv.READ_IGNORE} in the name")
+    print(f"File list: {data_file_list}")
     print()
 
     # get a list[Reference]
@@ -179,7 +181,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     # # # count total number of finished number of reads,
     # # # and check the time of initiation
     '''This function will make a text print: opening large file takes some time'''
-    total_reads_count, reads_count_list = get_total_number_of_reads(address_list=address_list)
+    total_reads_count, reads_count_list = get_total_number_of_reads(data_file_list=data_file_list)
     finish_reads_count = 0
     start_time = datetime.datetime.now()
     start_time_for_file_before = datetime.datetime.now()
@@ -190,7 +192,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     file = open(os.path.join(DATA_ADDRESS, ".program_is_running_here"), 'w')
     file.close()
 
-    for file_no, file_name in enumerate(address_list):
+    for file_no, file_name in enumerate(data_file_list):
         '''
         For each file, This happens:
             get a list of 'reads' from file (NGS-fastq only),
@@ -220,7 +222,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
         # build list[InDel_Counter_For_Ref]
         indel_counter_list = []
         for reference in reference_list:
-            indel_counter = InDel_Counter_for_Genotype(ref_set=reference)
+            indel_counter = InDel_Counter_for_Genotype(reference=reference)
             indel_counter.set_file_name(file_name=file_name)
             indel_counter_list.append(indel_counter)
 
@@ -229,7 +231,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
         elif file_name[-5:] == str(".fastq")[-5:]:
             read_raw_iter = SeqIO.parse(os.path.join(DATA_ADDRESS, file_name), "fastq")
         else:
-            print(f"({file_no + 1}/{len(address_list)}) {file_name} is not readable: is it .fastq or .fastq.gz ?")
+            print(f"({file_no + 1}/{len(data_file_list)}) {file_name} is not readable: is it .fastq or .fastq.gz ?")
             continue
 
         # # # move the file to the 'used' folder, as quick as possible
@@ -254,7 +256,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
                     delta_time = now_time - start_time_for_file_before
                     delta_count = i + reads_count_list[file_no-1]
 
-                print(f"\r({file_no + 1}/{len(address_list)}) "
+                print(f"\r({file_no + 1}/{len(data_file_list)}) "
                       f"for {file_name}: {((i+1)/len(read_raw_list)):.3f} / "
                       f"remaining: {(delta_time/delta_count)*(total_reads_count-finish_reads_count)} "
                       f"(for this file: {(delta_time/delta_count)*(len(read_raw_list)-(i+1))}) "
@@ -266,7 +268,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
             line_set_list.append(best_line_set)
 
         # # # for showing expected time left / while log writing
-        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / "
+        print(f"\r({file_no + 1}/{len(data_file_list)}) for {file_name}: Complete / "
               f"Writing log files (length: {len(line_set_list)})                              ", end="")
 
         # count the number of each indel type,
@@ -325,7 +327,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
 
         # # for showing time used
         end_time_for_file = datetime.datetime.now()
-        print(f"\r({file_no + 1}/{len(address_list)}) for {file_name}: Complete / Log written / "
+        print(f"\r({file_no + 1}/{len(data_file_list)}) for {file_name}: Complete / Log written / "
               f"{end_time_for_file - start_time} ({end_time_for_file - start_time_for_file} for this file) is passed "
               f"(length: {len(line_set_list)})       ")
 

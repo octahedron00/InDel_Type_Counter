@@ -1,96 +1,597 @@
-pseudocode for total.
+pseudocode for indel_type_counter.
 
 
 Dependencies:
+    Python 3.8
+        complete type hinting in iterable only possible in python 3.10,
+        but using python 3.10 is a bit harder than 3.8 in linux-base system.
+
     Bio
         Align: for align
         SeqIO: for reading fasta / fastq files
 
     click
         for command line interface working.
-        only works in the main
+        only works in the main.
 
-    csv, xlsxwriter
+    xlsxwriter
         for writing excel-type log file
 
-    datetime, os, gzip, typing
+    datetime, os, gzip, typing(3.10 > 3.8), csv
 
 
+Pseudocode form:
 
-main.py __init__:
+    READ: read from file
+    SET: set sth with using sth
+    DO: do some function about calculation
+    ADD: ???
+    WRITE: write log file
 
-    reference_list = get_references_from_file(REF_SET_ADDRESS)
-
-    data_file_list = get_file_list(DATA_ADDRESS)
-
-    all_indel_counter_list_list = []
-
-
-    for data_file in data_file_list:
-
-        line_set_list = []
-
-        for data_read in data_file =
-            line_set = get_best_line_set(data_read, reference_list)
-            line_set_list.append(line_set)
-
-        indel_counter_list = []
-
-        for reference in reference_list:
-            indel_counter = new InDel_Counter_For_Genotype(data_file, reference)
-            indel_counter_list.append(indel_counter)
-
-        for line_set in line_set_list:
-            for indel_counter in indel_counter_list:
-                if line_set.ref_name == indel_counter.ref_name:
-                    indel_counter.count(line_set)
+    k += 1  < DO? ADD?
 
 
-        line_set.sort()
+    IF a: THEN
+        DO
+    ENDIF
 
-        for indel_counter in indel_counter_list:
-            counter_line_set_list = []
+    CASE a OF
+    b:
+        DO
+    ENDCASE
 
-            for line_set in line_set_list:
-                if line_set.ref_name == indel_counter.ref_name:
-                    counter_line_set_list.append(line_set)
+    WHILE a:
+        DO
+    ENDWHILE
 
-            write_sub_log(counter_line_set_list, indel_counter)
+    FOR a in b:
+        DO
+    ENDFOR
 
-        all_indel_counter_list_list.append(indel_counter_list)
+    FUNCTION(a: type):
+        DO
+    ENDFUNCTION
 
-        # end for each file
+    CLASS a:
+        type a
+        type b
 
-    write_main_log(all_indel_counter_list_list)
-    write_main_csv_log(all_indel_counter_list_list, reference_list)
-    write_raw_data_log(all_indel_counter_list_list)
-
-    # end
+        FUNCTION __init__():
+            DO
+        ENDFUNCTION
+    ENDCLASS
 
 
 
 
+main.py
+FUNCTION __init__():
 
-fun get_best_line_set(data_read, reference_list):
-    possible_line_set_list = []
+    SET glv.variables <- get_CLI_config
 
-    for reference in reference_list:
-        possible_line_set = Line_Set(data_read, reference)
-        possible_line_set_list.append(possible_line_set)
+    SET data_file_list <- get_file_list(DATA_ADDRESS)
 
-    best_line_set = possible_line_set_list[0]
+    SET reference_list <- get_references_from_file(REF_SET_ADDRESS)
 
-    for possible_line_set in possible_line_set_list:
-        if best_line_set.score < possible_line_set:
-            best_line_set = possible_line_set
-
-    return best_line_set
+    SET all_indel_counter_list_list <- []
 
 
+    FOR data_file in data_file_list:
 
-class Line_Set:
+        SET line_set_list <- []
 
-    def init(data_read, reference):
+        FOR read_raw in data_file
+            SET line_set <- get_best_line_set(read_raw, reference_list)
+            DO line_set_list.append(line_set)
+        ENDFOR
 
+        SET indel_counter_list <- []
+
+        FOR reference in reference_list:
+            SET indel_counter <- new InDel_Counter_For_Genotype(data_file, reference)
+            DO indel_counter_list.append(indel_counter)
+        ENDFOR
+
+        FOR line_set in line_set_list:
+            FOR indel_counter in indel_counter_list:
+                IF line_set.ref_name == indel_counter.ref_name: THEN
+                    DO indel_counter.count(line_set)
+                ENDIF
+            ENDFOR
+        ENDFOR
+
+        DO line_set.sort(by line_set.indel_type, and line_set.score)
+
+        FOR indel_counter in indel_counter_list:
+            SET counter_line_set_list <- []
+
+            FOR line_set in line_set_list:
+                IF line_set.ref_name == indel_counter.ref_name: THEN
+                    DO counter_line_set_list.append(line_set)
+                ENDIF
+            ENDFOR
+
+            WRITE write_sub_log(counter_line_set_list, indel_counter)
+
+        DO all_indel_counter_list_list.append(indel_counter_list)
+    ENDFOR
+
+    WRITE write_main_log(all_indel_counter_list_list)
+    WRITE write_main_csv_log(all_indel_counter_list_list, reference_list)
+    WRITE write_raw_data_log(all_indel_counter_list_list)
+
+ENDFUNCTION
+
+
+
+FUNCTION get_references_from_file(REF_SET_ADDRESS: str):
+    # Get reference and guide RNA sequences,
+    # and match them as a 'Reference' class
+
+    SET reference_list <- []
+
+    READ ref_raw_list <- to_list(SeqIO.parse(REF_SET_ADDRESS, "fasta"))
+
+    READ g_rna_raw_list <- to_list(SeqIO.parse(GUIDE_RNA_SET_ADDRESS, "fasta"))
+
+    FOR (i, ref_raw) in enumerate(ref_raw_list):
+        IF i >= len(g_rna_raw_list): THEN
+            i = len(g_rna_raw_list) - 1
+        ENDIF
+        SET ref_set <- Reference(ref_raw=ref_raw, guide_rna_raw=g_rna_raw_list[i])
+        DO reference_list.append(ref_set)
+    ENDFOR
+
+    RETURN reference_list
+ENDFUNCTION
+
+
+FUNCTION get_best_line_set(read_raw: SeqIO.SeqRecord, reference_list: list[Reference]):
+    
+    SET test_line_set_list <- []
+    
+    FOR reference in reference_list:
+        SET test_line_set <- Line_Set(read_raw, reference)
+        DO test_line_set_list.append(test_line_set)
+    ENDFOR
+       
+    SET best_line_set_list <- test_line_set_list[0]
+    
+    FOR test_line_set in test_line_set_list:
+        IF best_line_set.score < test_line_set.score: THEN
+            SET best_line_set <- test_line_set
+        ENDIF
+    ENDFOR
+    
+    RETURN best_line_set
+ENDFUNCTION
+
+
+
+reference.py
+
+CLASS Reference:
+
+    SeqIO.SeqRecord ref_raw
+    str ref_seq
+    str ref_name
+    SeqIO.SeqRecord guide_rna_raw
+    str guide_rna_seq
+    str guide_rna_name
+
+    FUNCTION __init__(self, ref_raw: SeqIO.SeqRecord, guide_rna_raw: SeqIO.SeqRecord):
+        SET self.ref_raw = ref_raw
+        SET self.ref_seq = str(ref_raw.seq).uppercase()
+        SET self.ref_name = ref_raw.name
+        SET self.guide_rna_raw = guide_rna_raw
+        SET self.guide_rna_seq = str(guide_rna_raw.seq).uppercase()
+        SET self.guide_rna_name = guide_rna_raw.name
+    ENDFUNCTION
+ENDCLASS
+
+
+CLASS Line_Set:
+
+    Reference ref_set
+    str pos_line
+    str ref_line
+    str match_line
+    str read_line
+    str phred_line
+
+    str guide_rna_seq
+
+    str read_name
+    str ref_name
+    str guide_rna_name
+    str file_name
+
+    str indel_type
+    int indel_length
+    str indel_reason
+    int indel_type_pos
+    int cut_pos
+    int std_pos
+    int rna_pos
+
+    int indel_same_type_count
+
+    int int_score
+    float score
+    float phred_score
+
+    FUNCTION __init__(self, read_raw: SeqIO.SeqRecord, ref_set: Reference):
+
+        SET self.ref_set <- ref_set
+        SET self.ref_name <- ref_set.ref_name
+        SET self.guide_rna_seq <- ref_set.guide_rna_seq
+        SET self.guide_rna_name <- ref_set.guide_rna_name
+
+        SET self.read_name <- read_raw.name
+
+        # try aligning, and get ref, match, seq line here
+        DO self._set_align_line_set(ref_seq=ref_set.ref_seq, read_seq=str(read_raw.seq).upper())
+
+        # get aligned phred line here
+        DO self._set_aligned_phred_line_and_score(read_raw=read_raw)
+
+        # get pos line and cut position (endpoint of guide_RNA / startpoint of PAM)
+        DO self._set_indel_pos_line(guide_rna_seq=ref_set.guide_rna_seq)
+
+        # get indel type from the position... only if guide RNA sequence matches.
+        DO self._set_main_indel(cut_pos=self.cut_pos)
+
+        # check whether the type is error or not... and set align score with ratio of mismatch without main indel
+        DO self._set_score_and_check_err()
+    ENDFUNCTION
+
+
+    FUNCTION set_file_name(self, file_name: str):
+        SET self.file_name <- file_name
+    ENDFUNCTION
+
+
+    FUNCTION _set_align_line_set(self, ref_seq, read_seq):
+        # 'X' means that the read must be between the reference
+        # = Aligning the subsequence in the sequence
+        SET ref_seq <- "X" + ref_seq + "X"
+
+        SET read_seq <- read_seq.replace("N", "-")
+
+        # align with the pre-set global variables for alignments.
+        SET aligner <- PairwiseAligner(score=(glv.get_align_matrix_for_subsequence_positioning(), glv.GAP_OPEN, glv.GAP_EXTEND))
+        SET alignments <- aligner.align(ref_seq, read_seq)
+
+        # get the untrimmed alignment result, based on the reference sequence
+        SET best_alignment = alignments[0]
+        SET ref_line_untrimmed = best_alignment[0]
+        SET read_line_untrimmed = best_alignment[1]
+
+        # trim the sequence, and build the match_line
+        SET ref_line <- ""
+        SET match_line <- ""
+        SET read_line <- ""
+        SET count_base <- 0
+        FOR (i, c) in enumerate(read_line_untrimmed):
+            IF count_base >= len(read_seq): THEN
+                BREAK(ENDFOR)
+            ENDIF
+            IF len(read_line) == 0 and c == "-": THEN
+                CONTINUE(NEXTFOR)
+            ENDIF
+            DO read_line += c
+            DO ref_line += ref_line_untrimmed[i]
+            DO count_base += 1
+            IF read_line_untrimmed[i] == '-': THEN
+                DO match_line += 'x'
+                DO count_base -= 1
+            ELSEIF ref_line_untrimmed[i] == '-': THEN
+                DO match_line += '+'
+            ELSEIF read_line_untrimmed[i] == ref_line_untrimmed[i]: THEN
+                DO match_line += '|'
+            ELSE: THEN
+                DO match_line += '.'
+            ENDIF
+        ENDFOR
+
+        # set the lines
+        SET self.ref_line <- ref_line
+        SET self.match_line <- match_line
+        SET self.read_line <- read_line
+    ENDFUNCTION
+
+
+    FUNCTION _set_aligned_phred_line_and_score(self, read_raw: SeqIO.SeqRecord):
+        # get quality score list[int] from SeqRecord: fastq files
+        SET quality_list <- read_raw.get_phred_quality()
+        IF len(quality_list) < 1:
+            RETURN(ENDFUNCTION)
+        ENDIF
+
+        # Build unaligned phred line from the quality score list, use 33-encoding
+        SET phred_line <- ""
+        SET phred_score_sum <- 0
+        FOR a in quality_list:
+            DO phred_line += str(chr(a + glv.PHRED_ENCODING))
+            DO phred_score_sum += a
+        ENDFOR
+
+        # Align the phred line
+        SET aligned_phred_line <- ""
+        FOR c in self.read_line:
+            IF c == '-': THEN
+                DO aligned_phred_line += " "
+            ELSE: THEN
+                DO aligned_phred_line += phred_line[0]
+                SET phred_line = phred_line[1:]
+            ENDIF
+        ENDFOR
+
+        SET self.phred_score <- phred_score_sum / (len(phred_line) + Z)
+        SET self.phred_line <- aligned_phred_line
+    ENDFUNCTION
+
+
+    FUNCTION _set_indel_pos_line(self, guide_rna_seq: str):
+        # get the guide_rna_seq alignment, from the function outside
+        SET pos_rna_start <- get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)[0]
+        SET pos_rna_end <- get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)[1]
+
+        IF pri < 0 OR pre < 0: THEN
+            SET self.cut_pos <- -1000
+            SET self.std_pos <- -1000
+            SET self.rna_pos <- -1000
+            RETURN(ENDFUNCTION)
+        ENDIF
+
+        # buffer: for finding the PAM sequence
+        SET ref_line_buffer <- self.ref_line + "X" * (glv.PAM_DISTANCE_MAX * 2)
+
+        # add ' ' to the starting point of guide RNA
+        SET pos_line <- " " * pos_rna_start
+        # add '>' at the position of guide RNA
+        FOR i in range(pos_rna_start, pos_rna_end):
+            IF ref_line_buffer[i] == '-': THEN
+                pos_line += "-"
+            ELSE: THEN
+                pos_line += ">"
+            ENDIF
+        ENDFOR
+
+        # find the first possible PAM sequence by 'NGG' (range: PAM_DISTANCE_MAX)
+        SET k0 <- 0
+        FOR i in range(glv.PAM_DISTANCE_MAX):
+            SET k1 <- 1
+            SET k2 <- 1
+            SET pos_line_add <- ''
+
+            # find first NT
+            WHILE ref_line_buffer[pos_rna_end + i + k0] == '-':
+                DO k0 += 1
+                DO pos_line += '-'
+            ENDWHILE
+            DO pos_line_add += '<'
+
+            # find second NT
+            WHILE ref_line_buffer[pos_rna_end + i + k0 + k1] == '-':
+                DO k1 += 1
+                Do pos_line_add += '-'
+            ENDWHILE
+            pos_line_add += '<'
+
+            # find third NT
+            WHILE ref_line_buffer[pos_rna_end + i + k0 + k1 + k2] == '-':
+                DO k2 += 1
+                DO pos_line_add += '-'
+            ENDWHILE
+            DO pos_line_add += '<'
+
+            # check whether the second and the third NT is all 'G' -> check NGG PAM sequence
+            IF ref_line_buffer[pos_rna_end + i + k0 + k1] == ref_line_buffer[pos_rna_end + i + k0 + k1 + k2] == 'G': THEN
+                DO pos_line += pos_line_add
+                BREAK(ENDFOR)
+            ELSE: THEN
+                DO pos_line += ' '
+            ENDIF
+        ENDFOR
+
+        # cut or add more ' ' to make the both length match
+        IF len(pos_line) < len(self.ref_line): THEN
+            DO pos_line += " " * (len(self.ref_line) - len(pos_line))
+        ELSE: THEN
+            SET pos_line <- pos_line[:len(self.ref_line)]
+        ENDIF
+
+        # So, where was the PAM?
+        SET pos_pam <- -2000
+        FOR (i, c) in enumerate(pos_line):
+            IF c == '<': THEN
+                SET pos_pam = i
+                BREAK(ENDFOR)
+        ENDFOR
+
+        # set the lines
+        SET self.pos_line <- pos_line
+        SET self.cut_pos <- pos_pam + glv.CUT_POS_FROM_PAM - insertion_between
+        SET self.std_pos <- pos_pam
+        SET self.rna_pos <- pre
+    ENDFUNCTION
+
+    FUNCTION _set_main_indel(self, cut_pos: int):
+
+        SET ref_line <- self.ref_line
+        SET match_line <- self.match_line
+        SET phred_line <- self.phred_line
+        SET std_pos <- self.std_pos
+        SET cut_pos <- self.cut_pos
+
+        SET indel = _InDel(ref_line=ref_line, match_line=match_line, phred_line=phred_line, std_pos=std_pos, cut_pos=cut_pos)
+
+        SET self.indel_type_pos <- indel.indel_type_pos
+        SET self.indel_type <- indel.indel_type
+        SET self.indel_length <- indel.indel_length
+        SET self.indel_reason <- indel.indel_reason
+    ENDFUNCTION
+
+
+    FUNCTION _set_score_and_check_err(self):
+        IF len(self) < 5: THEN
+            RETURN(ENDFUNCTION)
+        ENDIF
+
+        SET a <- 0
+        FOR c in self.match_line[glv.ERR_PADDING_FOR_SEQ : -glv.ERR_PADDING_FOR_SEQ]:
+            IF c == '|': THEN
+                DO a += 1
+            ENDIF
+        ENDFOR
+
+        SET score <- a / (len(self) - 2 * glv.ERR_PADDING_FOR_SEQ - self.indel_length)
+        SET self.score <- score
+
+        IF score < (1 - glv.ERR_RATIO_MAX): THEN
+            SET self.indel_type <- 'err'
+            SET self.indel_reason <- 'Too many mismatch and error'
+        SET self.int_score <- int((score - 1) * 1000)
+    ENDFUNCTION
+
+
+    FUNCTION set_indel_same_type_count(self, counter_dict: dict):
+        SET self.indel_same_type_count <- counter_dict[self.indel_type]
+    ENDFUNCTION
+
+ENDCLASS
+
+
+CLASS _InDel:
+    SET indel_type <- ""
+    SET indel_reason <- ""
+    SET indel_length <- 0
+    SET indel_type_pos <- 0
+
+    FUNCTION __init__(self, ref_line: str, match_line: str, phred_line: str, std_pos: int, cut_pos: int):
+
+        SET p1 <- -1
+        SET p2 <- -1
+
+        SET indel_i <- 0
+        SET indel_d <- 0
+        SET indel_length <- 0
+
+        SET indel_type <- "WT"
+        SET indel_reason <- "(WT)"
+        SET indel_pos <- -9999
+
+        FOR i, m in enumerate(match_line + str("X" * len(match_line))):
+            IF i < glv.ERR_PADDING_FOR_SEQ: THEN
+                CONTINUE(NEXTFOR)
+            ENDIF
+            IF i >= (len(phred_line) - glv.ERR_PADDING_FOR_SEQ): THEN
+                BREAK(ENDFOR)
+            ENDIF
+
+            IF m in MATCH_ERR_LETTER: THEN
+                SET p2 <- i + 1
+                DO indel_length += 1
+                IF p1 < 0:
+                    SET p1 = i
+                ENDIF
+                CASE m OF
+                'x':
+                    DO indel_d += 1
+                '+':
+                    DO indel_i += 1
+                '.':
+                    DO indel_d += 1
+                    DO indel_i += 1
+                ENDCASE
+            ELSEIF p2 >= 0: THEN
+                IF ((cut_pos - glv.CUT_POS_RADIUS) < p2) AND (p1 < (cut_pos + glv.CUT_POS_RADIUS)): THEN
+                    IF indel_d == indel_i == indel_length == 1: THEN
+                        IF (ord(phred_line[p1]) - glv.PHRED_ENCODING) > glv.PHRED_MEANINGFUL_MIN: THEN
+                            SET indel_type <- _get_indel_shape_text(indel_i, indel_d, p2 - std_pos, phred_line[p1])
+                            SET indel_pos <- p2 - std_pos
+                            SET indel_reason <- "Indel position confirmed by guide RNA and signal score"
+                        ENDIF
+                    ELSE: THEN
+                        SET indel_type <- _get_indel_shape_text(indel_i, indel_d, p2 - std_pos)
+                        SET indel_pos <- p2 - std_pos
+                        SET indel_reason <- "Indel position confirmed by guide RNA sequence"
+                        BREAK(ENDFOR)
+                    ENDIF
+                ENDIF
+                SET p1 <- -1
+                SET p2 <- -1
+                SET indel_i <- 0
+                SET indel_d <- 0
+                SET indel_length <- 0
+
+                IF cut_pos + glv.CUT_POS_RADIUS <= i: THEN
+                    BREAK(ENDFOR)
+            ENDIF
+        ENDFOR
+
+        IF indel_type == "WT": THEN
+            SET indel_pos <- -9999
+            SET indel_length <- 0
+
+        IF indel_type[:4] == '1I1D':
+            SET indel_length <- 1
+
+        SET self.indel_type <- indel_type
+        SET self.indel_type_pos <- indel_pos
+        SET self.indel_length <- indel_length
+        SET self.indel_reason <- indel_reason
+
+
+FUNCTION get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
+    SET pos_rna_start <- -1
+    SET pos_rna_end <- -1
+    IF len(guide_rna_seq) > 0: THEN
+        FOR i in range(len(ref_line) - len(guide_rna_seq)):
+            SET k <- 0
+            SET is_good <- False
+            SET pos_rna_start <- i
+            FOR (j, n) in enumerate(guide_rna_seq):
+                WHILE ref_line[i + j + k] == '-' AND (i+j+k) < len(ref_line):
+                    DO k += 1
+                ENDWHILE
+                IF (i+j+k) >= len(ref_line) OR ref_line[i + j + k] != n: THEN
+                    BREAK(ENDFOR)
+                ENDIF
+                IF j == (len(guide_rna_seq) - 1): THEN
+                    SET is_good <- True
+                    SET pos_rna_end <- (i + j + k + 1)
+                ENDIF
+            IF is_good: THEN
+                BREAK(ENDFOR)
+            ELSE:
+                SET pos_rna_start <- -1
+                SET pos_rna_end <- -1
+            ENDIF
+        ENDFOR
+    RETURN pos_rna_start, pos_rna_end
+ENDFUNCTION
+
+
+FUNCTION _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part = ''):
+    IF indel_i == 0: THEN
+        IF indel_d == 0: THEN
+            RETURN 'WT'
+        ELSE: THEN
+            RETURN f"{indel_d}D{pos}"
+        ENDIF
+    ELSE: THEN
+        IF indel_d == 0: THEN
+            RETURN f"{indel_i}I{pos}"
+        ELSE: THEN
+            RETURN f"{indel_i}I{indel_d}D{pos}"
+        ENDIF
+    ENDIF
+ENDFUNCTION
+
+
+
+indel_counter_for_genotype.py
 
 

@@ -25,14 +25,14 @@ class InDel_Counter_for_Genotype:
     count_map = {}
     best_example_map = {}
 
-    def __init__(self, ref_set: Reference):
+    def __init__(self, reference: Reference):
 
         # Only init the initial values of variables:
         # The real value will be updated with each 'count' function
 
-        self.ref_name = ref_set.ref_name
-        self.guide_rna_name = ref_set.guide_rna_name
-        self.guide_rna_seq = ref_set.guide_rna_seq
+        self.ref_name = reference.ref_name
+        self.guide_rna_name = reference.guide_rna_name
+        self.guide_rna_seq = reference.guide_rna_seq
         self.count_map = dict({'err': 0})
         self.best_example_map = {}
 
@@ -118,7 +118,7 @@ class InDel_Counter_for_Genotype:
             if key == 'err':
                 continue
             example_text += f"<< {key} ({self.count_map[key]}/{self.get_len(with_err=False)}, " \
-                            f"{self.count_map[key]/self.get_len(with_err=False):.3f}, without err) >>\n" \
+                            f"{self.count_map[key] / self.get_len(with_err=False):.3f}, without err) >>\n" \
                             f"{line_set.get_str_simple()}\n" \
                             f"\n"
         return example_text
@@ -141,7 +141,7 @@ class InDel_Counter_for_Genotype:
                                            key=lambda f: self.count_map[f[0]], reverse=True)
 
         if len(sorted_best_example_tuple) < 2:
-            text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True)+Z)):.3f})\n"
+            text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True) + Z)):.3f})\n"
             return text
 
         key, line_set = sorted_best_example_tuple[0]
@@ -175,17 +175,21 @@ class InDel_Counter_for_Genotype:
                 for key in sample_set.keys():
                     if sample_set[key]["ref_line"][i] == '-':
                         continue
-                    sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][i:]
-                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + ' ' + sample_set[key]["read_line"][i:]
-                    sample_set[key]["match_line"] = sample_set[key]["match_line"][:i] + ' ' + sample_set[key]["match_line"][i:]
-                    sample_set[key]["pos_line"] = sample_set[key]["pos_line"][:i] + ' ' + sample_set[key]["pos_line"][i:]
+                    sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][
+                                                                                          i:]
+                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + ' ' + sample_set[key][
+                                                                                                "read_line"][i:]
+                    sample_set[key]["match_line"] = sample_set[key]["match_line"][:i] + ' ' + sample_set[key][
+                                                                                                  "match_line"][i:]
+                    sample_set[key]["pos_line"] = sample_set[key]["pos_line"][:i] + ' ' + sample_set[key]["pos_line"][
+                                                                                          i:]
             else:
                 for key in sample_set.keys():
                     if sample_set[key]["match_line"][i] == '|':
                         continue
                     sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
                                                    sample_set[key]["read_line"][i].lower() + \
-                                                   sample_set[key]["read_line"][i+1:]
+                                                   sample_set[key]["read_line"][i + 1:]
             i += 1
 
         text += f"\n" \
@@ -195,11 +199,11 @@ class InDel_Counter_for_Genotype:
         for key in sample_set.keys():
             text += f"{sample_set[key]['read_line']} : {key:<8}" \
                     f"({self.count_map[key]:>5}/{self.get_len(with_err=False):}, " \
-                    f"{self.count_map[key]/(self.get_len(with_err=False)+Z):.3f})\n"
+                    f"{self.count_map[key] / (self.get_len(with_err=False) + Z):.3f})\n"
 
         text += f"\n"
-        text += f"{'-'*len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
-                f"{self.count_map['err']/(self.get_len(with_err=True)+Z):.3f})\n"
+        text += f"{'-' * len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
+                f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
         return text
 
 
@@ -219,17 +223,23 @@ def get_simple_example_set(line_set: Line_Set):
     for i in range(std_pos + 1, std_pos + pam_len + MARGIN_FOR_SAMPLE, 1):
         while line_set.ref_line[i + ins_down] == '-':
             ins_down += 1
+    print(line_set.read_name)
+    print(ins_up, ins_down)
+    print(line_set.ref_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                            (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
+    print(line_set.read_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+                             (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
 
-    simple_ref_line = line_set.ref_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    simple_ref_line = line_set.ref_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
 
-    simple_read_line = line_set.read_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    simple_read_line = line_set.read_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                           (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
 
-    simple_match_line = line_set.match_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    simple_match_line = line_set.match_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                             (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
 
-    simple_pos_line = line_set.pos_line[(rna_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    simple_pos_line = line_set.pos_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]
     #
     # if glv.DEBUG:

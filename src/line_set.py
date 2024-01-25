@@ -16,12 +16,12 @@ Z = 0.000000001
 
 
 def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
-    pri = -1
-    pre = -1
+    pos_rna_start = -1
+    pos_rna_end = -1
     if len(guide_rna_seq) > 0:
         for i in range(len(ref_line) - len(guide_rna_seq)):
             k, is_good = 0, False
-            pri = i
+            pos_rna_start = i
             for j, n in enumerate(guide_rna_seq):
                 while ref_line[i + j + k] == '-' and (i+j+k) < len(ref_line):
                     k += 1
@@ -29,12 +29,12 @@ def get_guide_rna_seq_position(ref_line: str, guide_rna_seq: str):
                     break
                 if j == (len(guide_rna_seq) - 1):
                     is_good = True
-                    pre = (i + j + k + 1)
+                    pos_rna_end = (i + j + k + 1)
             if is_good:
                 break
             else:
-                pri, pre = -1, -1
-    return pri, pre
+                pos_rna_start, pos_rna_end = -1, -1
+    return pos_rna_start, pos_rna_end
 
 
 class Line_Set:
@@ -81,7 +81,7 @@ class Line_Set:
 
     '''
 
-    ref_set = None
+    reference = None
     pos_line = ""
     ref_line = ""
     match_line = ""
@@ -110,23 +110,23 @@ class Line_Set:
     int_score = 0
     phred_score = 0
 
-    def __init__(self, read_raw: SeqIO.SeqRecord, ref_set: Reference):
+    def __init__(self, read_raw: SeqIO.SeqRecord, reference: Reference):
 
-        self.ref_set = ref_set
-        self.ref_name = ref_set.ref_name
-        self.guide_rna_seq = ref_set.guide_rna_seq
-        self.guide_rna_name = ref_set.guide_rna_name
+        self.reference = reference
+        self.ref_name = reference.ref_name
+        self.guide_rna_seq = reference.guide_rna_seq
+        self.guide_rna_name = reference.guide_rna_name
 
         self.read_name = read_raw.name
 
         # try aligning, and get ref, match, seq line here
-        self._set_align_line_set(ref_seq=ref_set.ref_seq, read_seq=str(read_raw.seq).upper())
+        self._set_align_line_set(ref_seq=reference.ref_seq, read_seq=str(read_raw.seq).upper())
 
         # get aligned phred line here
         self._set_aligned_phred_line_and_score(read_raw=read_raw)
 
         # get pos line and cut position (endpoint of guide_RNA / startpoint of PAM)
-        self._set_indel_pos_line(guide_rna_seq=ref_set.guide_rna_seq)
+        self._set_indel_pos_line(guide_rna_seq=reference.guide_rna_seq)
 
         # get indel type from the position... only if guide RNA sequence matches.
         self._set_main_indel(cut_pos=self.cut_pos)
@@ -231,15 +231,14 @@ class Line_Set:
 
     def _set_indel_pos_line(self, guide_rna_seq: str):
         # get the guide_rna_seq alignment, from the function outside
-        pri, pre = get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)
-
-        self.rna_pos = pre
+        pos_rna_start, pos_rna_end = get_guide_rna_seq_position(self.ref_line, self.guide_rna_seq)
 
         # if guide RNA is not aligned: the sequence will be considered as an error,
         # since no indel is close the cut_pos(ition)
-        if pri < 0 or pre < 0:
+        if pos_rna_start < 0 or pos_rna_end < 0:
             self.cut_pos = -1000
             self.std_pos = -1000
+            self.rna_pos = -1000
             return
 
         # buffer: for finding the PAM sequence
@@ -247,23 +246,39 @@ class Line_Set:
 
         # build the pos(ition)_line
         # add ' ' to the starting point of guide RNA
-        pos_line = " " * pri
+        pos_line = " " * pos_rna_start
         # add '>' at the position of guide RNA
-        for i in range(pri, pre):
+        for i in range(pos_rna_start, pos_rna_end):
             if ref_line_buffer[i] == '-':
                 pos_line += "-"
             else:
                 pos_line += ">"
 
         # find the first possible PAM sequence by 'NGG' (range: PAM_DISTANCE_MAX)
-        insertion_between = 0
-        k = 0
+        k0 = 0
         for i in range(glv.PAM_DISTANCE_MAX):
-            while ref_line_buffer[pre + i + insertion_between] == '-':
-                insertion_between += 1
+            k1 = 1
+            k2 = 1
+            pos_line_add = ''
+            # find first NT
+            while ref_line_buffer[pos_rna_end + i + k0] == '-':
+                k0 += 1
                 pos_line += '-'
-            if ref_line_buffer[pre + i + insertion_between] == ref_line_buffer[pre + i + k + insertion_between] == "G":
-                pos_line += '<<<'
+            pos_line_add += '<'
+            # find second NT
+            while ref_line_buffer[pos_rna_end + i + k0 + k1] == '-':
+                k1 += 1
+                pos_line_add += '-'
+            pos_line_add += '<'
+            # find third NT
+            while ref_line_buffer[pos_rna_end + i + k0 + k1 + k2] == '-':
+                k2 += 1
+                pos_line_add += '-'
+            pos_line_add += '<'
+
+            # check whether the second and the third NT is all 'G' -> check NGG PAM sequence
+            if ref_line_buffer[pos_rna_end + i + k0 + k1] == ref_line_buffer[pos_rna_end + i + k0 + k1 + k2] == 'G':
+                pos_line += pos_line_add
                 break
             else:
                 pos_line += ' '
@@ -283,10 +298,11 @@ class Line_Set:
         # set the lines
         self.pos_line = pos_line
         # cut position = pam position + pre-set delta value(default: -3) - insertion
-        self.cut_pos = pos_pam + glv.CUT_POS_FROM_PAM - insertion_between
+        self.cut_pos = pos_pam + glv.CUT_POS_FROM_PAM - k0
         # standard position = naming indels:
         # Each sequence of PAM will have the position number 1, 2, 3.
         self.std_pos = pos_pam
+        self.rna_pos = pos_rna_end
 
     def _set_main_indel(self, cut_pos: int):
         '''
@@ -318,7 +334,7 @@ class Line_Set:
         for c in self.match_line[glv.ERR_PADDING_FOR_SEQ:-glv.ERR_PADDING_FOR_SEQ]:
             if c == '|':
                 a += 1
-        score = a / (len(self) - 2 * glv.ERR_PADDING_FOR_SEQ - self.indel_length)
+        score = a / (len(self) - (2 * glv.ERR_PADDING_FOR_SEQ) - self.indel_length)
 
         self.score = score
 
@@ -385,15 +401,16 @@ class _InDel:
             indel_pos = -9999
             indel_length = 0
 
+        if indel_type[:4] == '1I1D':
+            indel_length = 1
+
         self.indel_type = indel_type
         self.indel_type_pos = indel_pos
         self.indel_length = indel_length
         self.indel_reason = indel_reason
 
 
-def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part = ''):
-    if indel_i < 0:
-        return 'err'
+def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part: str = ''):
 
     if indel_i == indel_d == 1 and glv.DEBUG:
         return f"1I1D{pos}{phred_part}"

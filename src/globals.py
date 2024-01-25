@@ -1,4 +1,4 @@
-VERSION = '1.2.5'
+VERSION = '1.2.6'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -48,7 +48,7 @@ EXPLANATION_MAP['phred_meaningful_score_min'] = "One mismatch will be shown as '
 global MAT, MIS, GAP_OPEN, GAP_EXTEND
 MAT = 2
 MIS = -1
-GAP_OPEN = -50
+GAP_OPEN = -30
 GAP_EXTEND = -4
 EXPLANATION_MAP['score_match'] = "Score for align: for Match"
 EXPLANATION_MAP['score_mismatch'] = "Score for align: for Mismatch"

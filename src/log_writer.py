@@ -189,15 +189,15 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
     ref_line = guide_rna_seq
     selected_area_line = ""
 
-    # pre = position rna ending
-    pre = len(ref_line)
+    # pos_rna_end = position rna ending
+    pos_rna_end = len(ref_line)
     std_pos = len(ref_line)
     cut_pos = len(ref_line) + glv.CUT_POS_FROM_PAM
 
     ref_line += "NGG_______"
 
     for i, a in enumerate(ref_line):
-        if i < pre:
+        if i < pos_rna_end:
             pos_line += '>'
         elif std_pos <= i < std_pos+3:
             pos_line += '<'
@@ -219,7 +219,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
 
     ref_line += guide_rna_seq
 
-    pre = len(ref_line)
+    pos_rna_end = len(ref_line)
     std_pos = len(ref_line) + 1
     cut_pos = len(ref_line) + 1 + glv.CUT_POS_FROM_PAM
 
@@ -229,7 +229,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
         if i < new_starting_point:
             continue
 
-        if i < pre:
+        if i < pos_rna_end:
             pos_line += '>'
         elif std_pos <= i < std_pos + 3:
             pos_line += '<'
