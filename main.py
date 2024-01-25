@@ -106,20 +106,20 @@ def key_for_sorting_err(line_set: Line_Set):
 
 
 @click.command()
-@click.option('-n', '--read_ignore', default=['R2', 'Undetermined'], multiple=True,
+@click.option('-x', '--read_ignore', default=['R2', 'Undetermined'], multiple=True,
               help=glv.EXPLANATION_MAP['read_ignore'])
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])
 @click.option('-p', '--err_padding_for_seq', default=1,
               help=glv.EXPLANATION_MAP['err_padding_for_seq'])
-@click.option('-x', '--cut_pos_from_pam', default=-3,
+@click.option('-d', '--cut_pos_from_pam', default=-3,
               help=glv.EXPLANATION_MAP['cut_pos_from_pam'])
 @click.option('-r', '--cut_pos_radius', default=5,
               help=glv.EXPLANATION_MAP['cut_pos_radius'])
 #
 @click.option('-s', '--phred_meaningful_score_min', default=30,
               help=glv.EXPLANATION_MAP['phred_meaningful_score_min'])
-@click.option('-d', '--pam_distance_max', default=5,
+@click.option('--pam_distance_max', default=5,
               help=glv.EXPLANATION_MAP['pam_distance_max'])
 @click.option('--score_match', default=2,
               help=glv.EXPLANATION_MAP['score_match'])
