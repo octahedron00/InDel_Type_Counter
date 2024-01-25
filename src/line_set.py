@@ -282,7 +282,7 @@ class Line_Set:
 
         # set the lines
         self.pos_line = pos_line
-        # cut position = pam position + pre-set delta value(default: -3) -
+        # cut position = pam position + pre-set delta value(default: -3) - insertion
         self.cut_pos = pos_pam + glv.CUT_POS_FROM_PAM - insertion_between
         # standard position = naming indels:
         # Each sequence of PAM will have the position number 1, 2, 3.
