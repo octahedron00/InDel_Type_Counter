@@ -69,8 +69,9 @@ def get_file_address_list():
                     if os.path.isfile(os.path.join(DATA_ADDRESS, file_name))
                     and file_name[-6:] in ('.fastq', 'stq.gz')]
 
-    if len(glv.READ_IGNORE) > 0:
-        address_list = [address for address in address_list if address.find(glv.READ_IGNORE) < 0]
+    for ignore_text in glv.READ_IGNORE:
+        if len(ignore_text) > 0:
+            address_list = [address for address in address_list if address.find(ignore_text) < 0]
 
     address_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f)) + '0'))
     return address_list
@@ -105,7 +106,7 @@ def key_for_sorting_err(line_set: Line_Set):
 
 
 @click.command()
-@click.option('-n', '--read_ignore', default='R2',
+@click.option('-n', '--read_ignore', default=['R2', 'Undetermined'], multiple=True,
               help=glv.EXPLANATION_MAP['read_ignore'])
 @click.option('-e', '--err_ratio_max', default=0.03,
               help=glv.EXPLANATION_MAP['err_ratio_max'])

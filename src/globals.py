@@ -1,4 +1,4 @@
-VERSION = '1.2.4'
+VERSION = '1.2.5'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
@@ -10,13 +10,15 @@ global TASK_TITLE, OPEN_XLSX_AUTO, READ_IGNORE, DEBUG
 
 TASK_TITLE = ""
 OPEN_XLSX_AUTO = False
-READ_IGNORE = 'R2'
+READ_IGNORE = ['R2', 'Undetermined']
 DEBUG = False
-EXPLANATION_MAP['task_title'] = "Title for this task"
+EXPLANATION_MAP['task_title'] = "Title for this task."
 EXPLANATION_MAP['open_xlsx_auto'] = "Open the excel log file automatically if finished"
-EXPLANATION_MAP['read_ignore'] = "ignoring some files with this in its name: " \
-                                 "R2 to ignore all Read 2(default), '' to ignore nothing"
-EXPLANATION_MAP['debug'] = "Debug mode"
+EXPLANATION_MAP['read_ignore'] = "ignoring some files by its name containing: " \
+                                 "insert R2 to ignore all Read 2(default), " \
+                                 "Undetermined to ignore all extra data(default), " \
+                                 "or '' to ignore nothing."
+EXPLANATION_MAP['debug'] = "Debug mode."
 
 
 # 1 variables for formatting the data : will never change
@@ -32,9 +34,9 @@ ERR_PADDING_FOR_SEQ = 1
 CUT_POS_FROM_PAM = -3
 CUT_POS_RADIUS = 5
 EXPLANATION_MAP['err_ratio_max'] = "The threshold of mismatch ratio in aligned line set, without the main indel."
-EXPLANATION_MAP['err_padding_for_seq'] = "The mismatch in this padding length from both end will not be counted"
-EXPLANATION_MAP['cut_pos_from_pam'] = "Set estimated 'cut' position from the starting point of PAM sequence"
-EXPLANATION_MAP['cut_pos_radius'] = "The indel within this radius from the estimated 'cut' pos will be considered"
+EXPLANATION_MAP['err_padding_for_seq'] = "The mismatch in this length from both end will not be considered as an error."
+EXPLANATION_MAP['cut_pos_from_pam'] = "Set estimated 'cut' position from the starting point of PAM sequence."
+EXPLANATION_MAP['cut_pos_radius'] = "The indel within this radius from the estimated 'cut' pos will be considered."
 
 PAM_DISTANCE_MAX = 5
 PHRED_MEANINGFUL_MIN = 30
