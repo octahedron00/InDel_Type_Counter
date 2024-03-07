@@ -1,5 +1,6 @@
 import datetime
 import csv
+import os
 import re
 from xlsxwriter.workbook import Workbook
 
@@ -11,30 +12,39 @@ from src.reference import Reference
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
 import src.globals as glv
 
-SUB_LOG_ADDRESS = "./log/"
-RESULT_LOG_ADDRESS = "./log/"
-
-
-def get_main_log_name(extension: str):
-    valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
-
-    return f"./{valid_task_title}_count_result.{extension}"
-
-
 # Variables for uh... zero division
 Z = 0.000000001
 
 
-def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
+def get_main_log_name(extension: str, is_folder=False):
+    valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
+
+    if not os.path.exists(f"./Result_{valid_task_title}/"):
+        os.makedirs(f"./Result_{valid_task_title}/")
+    if not os.path.exists(f"./Result_{valid_task_title}/log/"):
+        os.makedirs(f"./Result_{valid_task_title}/log/")
+
+    if is_folder:
+        return f"./Result_{valid_task_title}/"
+    return f"./Result_{valid_task_title}/{valid_task_title}_count_result.{extension}"
+
+
+def get_sub_log_address(file_name: str, ref_name: str, extension: str):
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
     if file_name[-5:] == str(".fastq")[-5:]:
         valid_tested_file_name = "".join([c for c in file_name[:-6] if c not in "\/:*?<>| -"])
     else:
         valid_tested_file_name = "".join([c for c in file_name[:-9] if c not in "\/:*?<>| -"])
-    valid_ref_name = "".join([c for c in indel_counter.ref_name if c not in "\/:*?<>| -"])
+    valid_ref_name = "".join([c for c in ref_name if c not in "\/:*?<>| -"])
 
-    file_log = open(SUB_LOG_ADDRESS +
-                    valid_task_title + "--" + valid_tested_file_name + "--" + valid_ref_name + ".txt", "w")
+    address = get_main_log_name('txt', is_folder=True) + 'log/' + valid_task_title + "--" + valid_tested_file_name + "--" \
+              + valid_ref_name + "." + extension
+
+    return address
+
+
+def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
+    file_log = open(get_sub_log_address(file_name, indel_counter.ref_name, 'txt'), 'w')
 
     file_log.write(f""
                    f"# <InDel_Type_Counter {glv.VERSION} Side Log for {file_name}>\n"
@@ -135,10 +145,12 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    f"    <br>\n")
 
     for indel_counter_list in indel_counter_list_list:
-        file_log.write(f"    <br><br><div class=file_{indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
+        file_log.write(
+            f"    <br><br><div class=file_{indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
         for indel_counter in indel_counter_list:
             file_log.write(f"<div class=ref_{indel_counter.ref_name}>")
-            example_text = indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ', '&nbsp;&nbsp;')
+            example_text = indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ',
+                                                                                                             '&nbsp;&nbsp;')
 
             change_next_to = "ATGCatgc- <>&;"
             change_this = 'atgc-'
@@ -238,6 +250,9 @@ def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Geno
         worksheet.set_column_pixels(8, 9, 150 / 1.4275)
         worksheet.set_column_pixels(10, 80, 136 / 1.4275)
     workbook.close()
+
+    if os.path.exists(csv_log_name):
+        os.remove(csv_log_name)
 
 
 def _showing_selected_area_to_text(guide_rna_seq: str):
