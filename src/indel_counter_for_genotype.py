@@ -223,12 +223,12 @@ def get_simple_example_set(line_set: Line_Set):
     for i in range(std_pos + 1, std_pos + pam_len + MARGIN_FOR_SAMPLE, 1):
         while line_set.ref_line[i + ins_down] == '-':
             ins_down += 1
-    print(line_set.read_name)
-    print(ins_up, ins_down)
-    print(line_set.ref_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
-                            (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
-    print(line_set.read_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
-                             (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
+    # print(line_set.read_name)
+    # print(ins_up, ins_down)
+    # print(line_set.ref_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    #                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
+    # print(line_set.read_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
+    #                          (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)])
 
     simple_ref_line = line_set.ref_line[(std_pos - rna_len - ins_up - MARGIN_FOR_SAMPLE):
                                         (std_pos + pam_len + ins_down + MARGIN_FOR_SAMPLE)]

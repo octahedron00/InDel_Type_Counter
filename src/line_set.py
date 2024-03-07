@@ -181,6 +181,9 @@ class Line_Set:
         # trim the sequence, and build the match_line
         ref_line = match_line = read_line = ""
         count_base = 0
+
+        match_list = []
+
         for i, c in enumerate(read_line_untrimmed):
             if count_base >= len(read_seq):
                 break
@@ -190,14 +193,16 @@ class Line_Set:
             ref_line += ref_line_untrimmed[i]
             count_base += 1
             if read_line_untrimmed[i] == '-':
-                match_line += 'x'
+                match_list.append('x')
                 count_base -= 1
             elif ref_line_untrimmed[i] == '-':
-                match_line += '+'
+                match_list.append('+')
             elif read_line_untrimmed[i] == ref_line_untrimmed[i]:
-                match_line += '|'
+                match_list.append('|')
             else:
-                match_line += '.'
+                match_list.append('.')
+
+        match_line = "".join(match_list)
 
         # set the lines
         self.ref_line = ref_line
@@ -314,13 +319,14 @@ class Line_Set:
         :param cut_pos:
         '''
 
+        read_line = self.read_line
         ref_line = self.ref_line
         match_line = self.match_line
         phred_line = self.phred_line
         std_pos = self.std_pos
         cut_pos = self.cut_pos
 
-        indel = _InDel(ref_line=ref_line, match_line=match_line, phred_line=phred_line, std_pos=std_pos, cut_pos=cut_pos)
+        indel = _InDel(read_line=read_line, ref_line=ref_line, match_line=match_line, phred_line=phred_line, std_pos=std_pos, cut_pos=cut_pos)
 
         self.indel_type_pos = indel.indel_type_pos
         self.indel_type = indel.indel_type
@@ -353,7 +359,7 @@ class _InDel:
     indel_length = 0
     indel_type_pos = 0
 
-    def __init__(self, ref_line: str, match_line: str, phred_line: str, std_pos: int, cut_pos: int):
+    def __init__(self, read_line: str, ref_line: str, match_line: str, phred_line: str, std_pos: int, cut_pos: int):
 
         p1 = p2 = -1
         indel_i, indel_d, indel_length = 0, 0, 0
@@ -385,11 +391,11 @@ class _InDel:
                 if ((cut_pos - glv.CUT_POS_RADIUS) < p2) and (p1 < (cut_pos + glv.CUT_POS_RADIUS)):
                     if indel_d == indel_i == indel_length == 1:
                         if (ord(phred_line[p1]) - glv.PHRED_ENCODING) > glv.PHRED_MEANINGFUL_MIN:
-                            indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos, phred_line[p1])
+                            indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos, read_line[p1], phred_line[p1])
                             indel_pos = p2 - std_pos
                             indel_reason = "Indel position confirmed by guide RNA and signal score"
                     else:
-                        indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos)
+                        indel_type = _get_indel_shape_text(indel_i, indel_d, p2 - std_pos, read_line[p1:p2])
                         indel_pos = p2 - std_pos
                         indel_reason = "Indel position confirmed by guide RNA sequence"
                         break
@@ -410,10 +416,13 @@ class _InDel:
         self.indel_reason = indel_reason
 
 
-def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part: str = ''):
+def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, insert_part: str = '', phred_part: str = ''):
 
     if indel_i == indel_d == 1 and glv.DEBUG:
         return f"1I1D{pos}{phred_part}"
+
+    if len(insert_part) > 2:
+        insert_part = insert_part[:2]
 
     if indel_i == 0:
         if indel_d == 0:
@@ -422,6 +431,6 @@ def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, phred_part: str 
             return f"{indel_d}D{pos}"
     else:
         if indel_d == 0:
-            return f"{indel_i}I{pos}"
+            return f"{indel_i}I{pos}{insert_part}"
         else:
-            return f"{indel_i}I{indel_d}D{pos}"
+            return f"{indel_i}I{indel_d}D{pos}{insert_part}"
