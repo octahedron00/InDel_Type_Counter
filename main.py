@@ -12,7 +12,7 @@ from typing import List
 from src.reference import Reference
 from src.line_set import Line_Set
 from src.indel_counter_for_genotype import InDel_Counter_for_Genotype
-from src.log_writer import write_main_log, write_sub_log, write_main_csv_log, get_main_log_name, write_raw_data_log
+from src.log_writer import write_main_log, write_main_html_log, write_sub_log, write_main_csv_log, get_main_log_name, write_raw_data_log
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
@@ -131,7 +131,7 @@ def key_for_sorting_err(line_set: Line_Set):
 @click.option('--score_gap_extend', default=-4,
               help=glv.EXPLANATION_MAP['score_gap_extend'])
 #
-@click.option('-t', '--task_title', default="task_" + str(datetime.datetime.now())[5:-10],
+@click.option('-t', '--task_title', default="task " + str(datetime.datetime.now())[5:-10],
               help=glv.EXPLANATION_MAP['task_title'])
 @click.option('-o', '--open_xlsx_auto', default=False, is_flag=True,
               help=glv.EXPLANATION_MAP['open_xlsx_auto'])
@@ -335,6 +335,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
 
     # Writing total log
     write_main_log(indel_counter_list_list=all_indel_counter_list_list, total_length=total_reads_count)
+    write_main_html_log(indel_counter_list_list=all_indel_counter_list_list, total_length=total_reads_count)
     write_main_csv_log(indel_counter_list_list=all_indel_counter_list_list, ref_set_list=reference_list)
     write_raw_data_log(indel_counter_list_list=all_indel_counter_list_list, debug_data=debug_data)
 

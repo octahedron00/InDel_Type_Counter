@@ -26,7 +26,6 @@ Z = 0.000000001
 
 
 def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_for_Genotype, file_name: str):
-
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
     if file_name[-5:] == str(".fastq")[-5:]:
         valid_tested_file_name = "".join([c for c in file_name[:-6] if c not in "\/:*?<>| -"])
@@ -100,6 +99,55 @@ def write_main_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype
     file_log.close()
 
 
+def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], total_length: int):
+    main_log_name = get_main_log_name("html")
+    file_log = open(main_log_name, "w")
+
+    file_log.write(f"<!DOCTYPE html>\n"
+                   "<html lang=\"en\">\n"
+                   "<head>\n"
+                   "    <meta charset=\"UTF-8\">\n"
+                   "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                   f"    <title>Result for {glv.TASK_TITLE}</title>\n"
+                   "\n"
+                   "    <style>\n"
+                   "        body {font-family:Consolas;}\n"
+                   "        .file_name {color: green; font-weight: bold; display: inline;}\n"
+                   "        .ref_name {color: blue; font-weight: bold; display: inline;}\n"
+                   "        .important {color: red; font-weight: bold; display: inline;}\n"
+                   "\n"
+                   "    </style>\n"
+                   "</head>\n"
+                   "<body>\n"
+                   "    \n")
+
+    html_global_variables = glv.get_text_of_global_variables().replace('\n', '<br>')
+
+    file_log.write(f"    <h1> <InDel_Type_Counter {glv.VERSION} Main Log> </h1>\n"
+                   f"    <h2> Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()}) </h2>\n"
+                   f"    <h2> Task Title: {glv.TASK_TITLE}</h2>\n"
+                   f"    <br>\n"
+                   f"    {html_global_variables}<br>\n"
+                   f"    <br>\n"
+                   f"    total length: {total_length}<br>\n"
+                   f"    \n"
+                   f"    \n")
+
+    for indel_counter_list in indel_counter_list_list:
+        file_log.write(f"    <h2><{indel_counter_list[0].file_name}></h2><br>\n"
+                       f"<br>\n")
+        for indel_counter in indel_counter_list:
+            file_log.write(indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ', '&nbsp;&nbsp;'))
+            file_log.write("\n"
+                           "<br>\n"
+                           "<br>\n"
+                           "<br>\n")
+
+    file_log.write("</body>\n"
+                   "</html>")
+    file_log.close()
+
+
 def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], ref_set_list: List[Reference]):
     csv_log_name = get_main_log_name("csv")
     xlsx_log_name = get_main_log_name("xlsx")
@@ -144,13 +192,13 @@ def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Geno
                     genotype.allele_set_text,
                     str(genotype).splitlines()[0].strip(),
                     len(indel_counter),
-                    f"err {indel_counter.count_map['err']}({round(indel_counter.count_map['err']/len_total, 3)})",
+                    f"err {indel_counter.count_map['err']}({round(indel_counter.count_map['err'] / len_total, 3)})",
                     indel_counter.get_len(with_err=False)]
 
             for key, value in sorted_count_map_list:
                 if key == 'err':
                     continue
-                row.append(f"{key} {value}({round(value/len_without_err, 3)})")
+                row.append(f"{key} {value}({round(value / len_without_err, 3)})")
             file_csv_writer.writerow(row)
         file_csv_writer.writerow([])
 
@@ -174,12 +222,12 @@ def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Geno
                 worksheet.write(r, c, col)
                 if c > 0:
                     worksheet.write(r, c, col, cell_format)
-        worksheet.set_column_pixels(0, 0, 255/1.4275)
-        worksheet.set_column_pixels(2, 2, 255/1.4275)
-        worksheet.set_column_pixels(4, 4, 660/1.4275)
-        worksheet.set_column_pixels(6, 6, 127/1.4275)
-        worksheet.set_column_pixels(8, 9, 150/1.4275)
-        worksheet.set_column_pixels(10, 80, 136/1.4275)
+        worksheet.set_column_pixels(0, 0, 255 / 1.4275)
+        worksheet.set_column_pixels(2, 2, 255 / 1.4275)
+        worksheet.set_column_pixels(4, 4, 660 / 1.4275)
+        worksheet.set_column_pixels(6, 6, 127 / 1.4275)
+        worksheet.set_column_pixels(8, 9, 150 / 1.4275)
+        worksheet.set_column_pixels(10, 80, 136 / 1.4275)
     workbook.close()
 
 
@@ -199,7 +247,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
     for i, a in enumerate(ref_line):
         if i < pos_rna_end:
             pos_line += '>'
-        elif std_pos <= i < std_pos+3:
+        elif std_pos <= i < std_pos + 3:
             pos_line += '<'
         else:
             pos_line += ' '
@@ -286,7 +334,7 @@ def get_indel_type_text_unpacked(indel_type: str):
 
     indel_type_lines = indel_type
     for letter in set_of_letter_between_number:
-        indel_type_lines = indel_type_lines.replace(letter, '\n'+letter+'\n')
+        indel_type_lines = indel_type_lines.replace(letter, '\n' + letter + '\n')
 
     str_set = indel_type_lines.splitlines(keepends=False)
 
@@ -305,5 +353,3 @@ def get_indel_type_text_unpacked(indel_type: str):
     indel_length = max(indel_i, indel_d)
 
     return indel_i, indel_d, indel_length, indel_pos
-
-

@@ -421,6 +421,7 @@ def _get_indel_shape_text(indel_i: int, indel_d: int, pos: int, insert_part: str
     if indel_i == indel_d == 1 and glv.DEBUG:
         return f"1I1D{pos}{phred_part}"
 
+    insert_part = insert_part.replace('-', '')
     if len(insert_part) > 2:
         insert_part = insert_part[:2]
 

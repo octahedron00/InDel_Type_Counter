@@ -123,7 +123,7 @@ class InDel_Counter_for_Genotype:
                             f"\n"
         return example_text
 
-    def get_simple_example_text(self):
+    def get_simple_example_text(self, is_html=False):
 
         genotype = self.get_genotype()
         text = f"for {self.ref_name} in {self.file_name}: \n" \
@@ -131,6 +131,15 @@ class InDel_Counter_for_Genotype:
                f"\n" \
                f"[Result] \n" \
                f"{genotype}\n"
+
+        if is_html:
+            html_genotype = str(genotype).replace("\n", '<br>')
+
+            text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2> \n" \
+                   f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
+                   f"\n" \
+                   f"[Result] \n" \
+                   f"<b class=important>{genotype}</b>\n"
 
         wt_seq = ""
         wt_pos = ""
