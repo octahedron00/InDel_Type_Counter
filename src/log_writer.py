@@ -135,9 +135,9 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    f"    <br>\n")
 
     for indel_counter_list in indel_counter_list_list:
-        file_log.write(f"    <br><br><div class=by_file><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
+        file_log.write(f"    <br><br><div class=file_{indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
         for indel_counter in indel_counter_list:
-            file_log.write("<div class=by_result>")
+            file_log.write(f"<div class=ref_{indel_counter.ref_name}>")
             example_text = indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ', '&nbsp;&nbsp;')
 
             change_next_to = "ATGCatgc- <>&;"
