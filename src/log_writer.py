@@ -125,6 +125,7 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    "        .file_name {color: blue; font-weight: bold; display: inline;}\n"
                    "        .ref_name {color: red; font-weight: bold; display: inline;}\n"
                    "        .important {color: green; font-weight: bold; display: inline;}\n"
+                   "        .not_important {color: gray; font-weight: bold; display: inline;}\n"
                    "        .point {color: red; font-weight: bold; display: inline;}\n"
                    "\n"
                    "    </style>\n"
@@ -148,10 +149,9 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
         file_log.write(
             f"    <br><br><div class=file_{indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
         for indel_counter in indel_counter_list:
-            file_log.write(f"<div class=ref_{indel_counter.ref_name}>")
             example_text = indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ',
                                                                                                              '&nbsp;&nbsp;')
-
+            file_log.write(f"<div class=ref_{indel_counter.ref_name}>")
             change_next_to = "ATGCatgc- <>&;"
             change_this = 'atgc-'
             for a in change_next_to:

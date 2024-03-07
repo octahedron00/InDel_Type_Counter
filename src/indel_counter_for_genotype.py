@@ -135,9 +135,14 @@ class InDel_Counter_for_Genotype:
         if is_html:
             html_genotype = str(genotype).replace("\n", '<br>')
 
-            text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2>" \
-                   f"<h2><b class=important>{html_genotype}</b></h2>" \
-                   f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n"
+            if html_genotype[:3] == str('err(err)')[:3]:
+                text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2>" \
+                       f"<h2><b class=not_important>{html_genotype}</b></h2>" \
+                       f"<div class=not_important>guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n"
+            else:
+                text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2>" \
+                       f"<h2><b class=important>{html_genotype}</b></h2>" \
+                       f"<div>guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n"
 
         sorted_best_example_tuple = sorted(self.best_example_map.items(),
                                            key=lambda f: self.count_map[f[0]], reverse=True)
@@ -146,7 +151,7 @@ class InDel_Counter_for_Genotype:
             text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True) + Z)):.3f})\n"
             return text
 
-        text += get_simple_example_lines(sorted_best_example_tuple, self, is_html=is_html)
+        text += get_simple_example_lines(sorted_best_example_tuple, self, is_html=is_html) + "</div>"
         return text
 
 
