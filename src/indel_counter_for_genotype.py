@@ -136,14 +136,8 @@ class InDel_Counter_for_Genotype:
             html_genotype = str(genotype).replace("\n", '<br>')
 
             text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2>" \
-                   f"<h2><b class=important>{genotype}</b></h2>\n" \
-                   f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
-                   f"\n"
-
-        wt_seq = ""
-        wt_pos = ""
-
-        sample_set = {}
+                   f"<h2><b class=important>{html_genotype}</b></h2>" \
+                   f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n"
 
         sorted_best_example_tuple = sorted(self.best_example_map.items(),
                                            key=lambda f: self.count_map[f[0]], reverse=True)
@@ -152,67 +146,82 @@ class InDel_Counter_for_Genotype:
             text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True) + Z)):.3f})\n"
             return text
 
-        key, line_set = sorted_best_example_tuple[0]
+        text += get_simple_example_lines(sorted_best_example_tuple, self, is_html=is_html)
+        return text
+
+
+def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counter_for_Genotype, is_html=False):
+    wt_seq = ""
+    wt_pos = ""
+    text = ""
+
+    sample_set = dict()
+
+    key, line_set = sorted_best_example_tuple[0]
+    if key == 'err':
+        key, line_set = sorted_best_example_tuple[1]
+
+    wt_set = get_simple_example_set(line_set=line_set)
+    wt_basic = wt_set["ref_line"]
+    pos_basic = wt_set["pos_line"]
+
+    for i, a in enumerate(wt_basic):
+        if a == '-':
+            continue
+        wt_seq += a
+        wt_pos += pos_basic[i]
+
+    for key, line_set in sorted_best_example_tuple:
         if key == 'err':
-            key, line_set = sorted_best_example_tuple[1]
+            continue
+        sample_set[key] = get_simple_example_set(line_set)
 
-        wt_set = get_simple_example_set(line_set=line_set)
-        wt_basic = wt_set["ref_line"]
-        pos_basic = wt_set["pos_line"]
-
-        for i, a in enumerate(wt_basic):
-            if a == '-':
-                continue
-            wt_seq += a
-            wt_pos += pos_basic[i]
-
-        for key, line_set in sorted_best_example_tuple:
-            if key == 'err':
-                continue
-            sample_set[key] = get_simple_example_set(line_set)
-
-        i = 0
-        while i < len(wt_seq):
-            is_added = False
+    i = 0
+    while i < len(wt_seq):
+        is_added = False
+        for key in sample_set.keys():
+            if sample_set[key]["match_line"][i] == '+':
+                is_added = True
+        if is_added:
+            wt_seq = wt_seq[:i] + ' ' + wt_seq[i:]
+            wt_pos = wt_pos[:i] + ' ' + wt_pos[i:]
             for key in sample_set.keys():
                 if sample_set[key]["ref_line"][i] == '-':
-                    is_added = True
-            if is_added:
-                wt_seq = wt_seq[:i] + ' ' + wt_seq[i:]
-                wt_pos = wt_pos[:i] + ' ' + wt_pos[i:]
-                for key in sample_set.keys():
-                    if sample_set[key]["ref_line"][i] == '-':
-                        continue
-                    sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][
-                                                                                          i:]
-                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + ' ' + sample_set[key][
-                                                                                                "read_line"][i:]
-                    sample_set[key]["match_line"] = sample_set[key]["match_line"][:i] + ' ' + sample_set[key][
-                                                                                                  "match_line"][i:]
-                    sample_set[key]["pos_line"] = sample_set[key]["pos_line"][:i] + ' ' + sample_set[key]["pos_line"][
-                                                                                          i:]
-            else:
-                for key in sample_set.keys():
-                    if sample_set[key]["match_line"][i] == '|':
-                        continue
-                    sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
-                                                   sample_set[key]["read_line"][i].lower() + \
-                                                   sample_set[key]["read_line"][i + 1:]
-            i += 1
+                    if is_html:
+                        sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
+                                                       sample_set[key]["read_line"][i].lower() + \
+                                                       sample_set[key]["read_line"][i + 1:]
+                    continue
+                sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][
+                                                                                      i:]
+                sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + ' ' + sample_set[key][
+                                                                                            "read_line"][i:]
+                sample_set[key]["match_line"] = sample_set[key]["match_line"][:i] + ' ' + sample_set[key][
+                                                                                              "match_line"][i:]
+                sample_set[key]["pos_line"] = sample_set[key]["pos_line"][:i] + ' ' + sample_set[key]["pos_line"][
+                                                                                      i:]
+        else:
+            for key in sample_set.keys():
+                if sample_set[key]["match_line"][i] == '|':
+                    continue
+                sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
+                                               sample_set[key]["read_line"][i].lower() + \
+                                               sample_set[key]["read_line"][i + 1:]
+        i += 1
 
-        text += f"\n" \
-                f"{wt_pos}\n" \
-                f"{wt_seq} : Reference      {self.get_len(with_err=False)}: Total without err\n" \
-                f"\n"
-        for key in sample_set.keys():
-            text += f"{sample_set[key]['read_line']} : {key:<8}" \
-                    f"({self.count_map[key]:>5}/{self.get_len(with_err=False):}, " \
-                    f"{self.count_map[key] / (self.get_len(with_err=False) + Z):.3f})\n"
+    text += f"\n" \
+            f"{wt_pos}\n" \
+            f"{wt_seq} : Reference      {self.get_len(with_err=False)}: Total without err\n" \
+            f"\n"
+    for key in sample_set.keys():
+        text += f"{sample_set[key]['read_line']} : {key:<8}" \
+                f"({self.count_map[key]:>5}/{self.get_len(with_err=False):}, " \
+                f"{self.count_map[key] / (self.get_len(with_err=False) + Z):.3f})\n"
 
-        text += f"\n"
-        text += f"{'-' * len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
-                f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
-        return text
+    text += f"\n"
+    text += f"{'-' * len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
+            f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
+    return text
 
 
 def get_simple_example_set(line_set: Line_Set):
