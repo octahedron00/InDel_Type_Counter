@@ -123,25 +123,26 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
 
     html_global_variables = glv.get_text_of_global_variables().replace('\n', '<br>')
 
-    file_log.write(f"    <h1> [InDel_Type_Counter {glv.VERSION} Main Log] </h1>\n"
+    file_log.write(f"    <div class=heading_info><h2> [InDel_Type_Counter {glv.VERSION} Main Log] </h2>\n"
                    f"    <h2> Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()}) </h2>\n"
                    f"    <h2> Task Title: {glv.TASK_TITLE}</h2>\n"
                    f"    <br>\n"
                    f"    {html_global_variables}<br>\n"
                    f"    <br>\n"
-                   f"    total length: {total_length}<br>\n"
-                   f"    \n"
-                   f"    \n")
+                   f"    total reads: {total_length} reads<br>\n"
+                   f"    <br></div>\n"
+                   f"    <br>\n")
 
     for indel_counter_list in indel_counter_list_list:
-        file_log.write(f"    <h2 class=file_name>[{indel_counter_list[0].file_name}]</h2><br>\n"
-                       f"<br>\n")
+        file_log.write(f"    <div class=by_file><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
         for indel_counter in indel_counter_list:
+            file_log.write("<div class=by_result>")
             file_log.write(indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ', '&nbsp;&nbsp;'))
             file_log.write("\n"
                            "<br>\n"
                            "<br>\n"
-                           "<br>\n")
+                           "<br></div>\n")
+        file_log.write("</div>")
 
     file_log.write("</body>\n"
                    "</html>")

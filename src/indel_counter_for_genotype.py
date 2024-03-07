@@ -135,11 +135,10 @@ class InDel_Counter_for_Genotype:
         if is_html:
             html_genotype = str(genotype).replace("\n", '<br>')
 
-            text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2> \n" \
+            text = f"<h2>for <div class=ref_name>{self.ref_name}</div> in <div class=file_name>{self.file_name}</div>:</h2>" \
+                   f"<h2><b class=important>{genotype}</b></h2>\n" \
                    f"guide_rna: {self.guide_rna_name} ({self.guide_rna_seq})\n" \
-                   f"\n" \
-                   f"[Result] \n" \
-                   f"<b class=important>{genotype}</b>\n"
+                   f"\n"
 
         wt_seq = ""
         wt_pos = ""
