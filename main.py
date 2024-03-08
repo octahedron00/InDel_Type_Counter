@@ -120,8 +120,13 @@ def test_all_input_files():
 
     if os.path.exists(GUIDE_RNA_SET_ADDRESS):
         try:
-            SeqIO.parse(GUIDE_RNA_SET_ADDRESS, 'fasta')
-            is_guide_rna_exist = True
+            start = True
+            seq_iter = SeqIO.parse(GUIDE_RNA_SET_ADDRESS, 'fasta')
+            for seq in seq_iter:
+                for a in str(seq.seq):
+                    if a not in 'ATGCatgc':
+                        start = False
+            is_guide_rna_exist = start
         except (TypeError, ValueError, PermissionError):
             pass
     else:
@@ -131,8 +136,13 @@ def test_all_input_files():
 
     if os.path.exists(REF_SET_ADDRESS):
         try:
-            SeqIO.parse(REF_SET_ADDRESS, 'fasta')
-            is_reference_exist = True
+            start = True
+            seq_iter = SeqIO.parse(REF_SET_ADDRESS, 'fasta')
+            for seq in seq_iter:
+                for a in str(seq.seq):
+                    if a not in 'ATGCatgc':
+                        start = False
+            is_reference_exist = start
         except (TypeError, ValueError, PermissionError):
             pass
     else:
@@ -142,11 +152,11 @@ def test_all_input_files():
                        "(length > 300 nt, margin > 50 nt is recommended)\n")
 
     if not is_data_exist:
-        print("No Data(NGS result files: fastq, fastq.gz) found in the ./data folder")
+        print("ERROR: No Data(NGS result files: fastq, fastq.gz) found in the ./data folder")
     if not is_reference_exist:
-        print("Something is wrong with ./ref/reference_seq_set.fasta file!")
+        print("ERROR: Something is wrong with ./ref/reference_seq_set.fasta file!")
     if not is_guide_rna_exist:
-        print("Something is wrong with ./ref/guide_RNA_set.fasta file!")
+        print("ERROR: Something is wrong with ./ref/guide_RNA_set.fasta file!")
     if is_guide_rna_exist and is_data_exist and is_reference_exist:
         return True
     print("Please check the files and try again!")

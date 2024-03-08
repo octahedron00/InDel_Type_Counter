@@ -1,4 +1,4 @@
-VERSION = '1.4.3'
+VERSION = '1.4.4'
 
 # Set of Global Variables for editing things:
 global EXPLANATION_MAP
