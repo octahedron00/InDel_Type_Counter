@@ -122,13 +122,14 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    "\n"
                    "    <style>\n"
                    "        body {font-family:Consolas;}\n"
+                   "        footer {text-align: center; background-color: #EBEFF3; padding: 10px;}\n"
                    "        .file_name {color: blue; font-weight: bold; display: inline;}\n"
                    "        .ref_name {color: red; font-weight: bold; display: inline;}\n"
                    "        .important {color: green; font-weight: bold; display: inline;}\n"
                    "        .not_important {color: gray; font-weight: bold; display: inline;}\n"
                    "        .point {color: red; font-weight: bold; display: inline;}\n"
-                   "        .file {margin: 5%}\n"
-                   "        .heading_info {margin: 5%}\n"
+                   "        .file {margin: 3%}\n"
+                   "        .heading_info {margin: 3%}\n"
                    "\n"
                    "    </style>\n"
                    "</head>\n"
@@ -144,8 +145,7 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    f"    {html_global_variables}<br>\n"
                    f"    <br>\n"
                    f"    total reads: {total_length} reads<br>\n"
-                   f"    <br></div>\n"
-                   f"    <br>\n")
+                   f"    </div>\n")
 
     for indel_counter_list in indel_counter_list_list:
         file_log.write(
@@ -159,7 +159,14 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                            "<br></div>\n")
         file_log.write("</div>\n")
 
-    file_log.write("</body>\n"
+    file_log.write("<footer>"
+                   "<b3><div class=point>C</div>as9 Mutant Genotyper with "
+                   "<div class=point>N</div>ext Generation <div class=point>S</div>equencing Data</b3><br>"
+                   "<b3>CNS-Genotyper by Octo Moon</b3><br>\n"
+                   "<b3>Contact: octahedron00@gmail.com "
+                   "or <a href=\"https://github.com/octahedron00\">GitHub</a></b3>\n"
+                   "</footer>\n"
+                   "</body>\n"
                    "</html>")
     file_log.close()
 
