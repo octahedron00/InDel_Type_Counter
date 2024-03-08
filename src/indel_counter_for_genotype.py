@@ -15,6 +15,20 @@ MARGIN_FOR_SAMPLE = 5
 
 # Variables for uh... zero division
 Z = 0.000000001
+DICT_ERR_NT = {
+    'A': '!',
+    'T': '@',
+    'G': '#',
+    'C': '$',
+    '-': '%',
+}
+DICT_ERR_NT_REV = {
+    '!': 'A',
+    '@': 'T',
+    '#': 'G',
+    '$': 'C',
+    '%': '-',
+}
 
 
 class InDel_Counter_for_Genotype:
@@ -105,25 +119,7 @@ class InDel_Counter_for_Genotype:
         sorted_count_tuple_list = self.get_sorted_count_map_list()
         return Genotype(indel_counter=self, sorted_count_tuple_list=sorted_count_tuple_list)
 
-    def get_examples_text(self):
-        #
-        # best_example_map = dict{str : Line_Set}
-        sorted_best_example_tuple = sorted(self.best_example_map.items(),
-                                           key=lambda f: self.count_map[f[0]], reverse=True)
-
-        example_text = "[Best Examples for each InDel type]\n" \
-                       "\n" \
-                       "\n"
-        for key, line_set in sorted_best_example_tuple:
-            if key == 'err':
-                continue
-            example_text += f"<< {key} ({self.count_map[key]}/{self.get_len(with_err=False)}, " \
-                            f"{self.count_map[key] / self.get_len(with_err=False):.3f}, without err) >>\n" \
-                            f"{line_set.get_str_simple()}\n" \
-                            f"\n"
-        return example_text
-
-    def get_simple_example_text(self, is_html=False):
+    def get_abstract_text(self, is_html=False):
 
         genotype = self.get_genotype()
         text = f"for {self.ref_name} in {self.file_name}: \n" \
@@ -149,9 +145,13 @@ class InDel_Counter_for_Genotype:
 
         if len(sorted_best_example_tuple) < 2:
             text += f"err: {self.count_map['err']} ({(self.count_map['err'] / (self.get_len(with_err=True) + Z)):.3f})\n"
+            if is_html:
+                text += '</div> <here code ends />\n'
             return text
 
-        text += get_simple_example_lines(sorted_best_example_tuple, self, is_html=is_html) + "</div>"
+        text += get_simple_example_lines(sorted_best_example_tuple, self, is_html=is_html)
+        if is_html:
+            text += '</div> <here code ends />\n'
         return text
 
 
@@ -166,7 +166,7 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
     if key == 'err':
         key, line_set = sorted_best_example_tuple[1]
 
-    wt_set = get_simple_example_set(line_set=line_set)
+    wt_set = get_simple_example_line_set(line_set=line_set)
     wt_basic = wt_set["ref_line"]
     pos_basic = wt_set["pos_line"]
 
@@ -179,7 +179,7 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
     for key, line_set in sorted_best_example_tuple:
         if key == 'err':
             continue
-        sample_set[key] = get_simple_example_set(line_set)
+        sample_set[key] = get_simple_example_line_set(line_set)
 
     i = 0
     while i < len(wt_seq):
@@ -191,10 +191,10 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
             wt_seq = wt_seq[:i] + ' ' + wt_seq[i:]
             wt_pos = wt_pos[:i] + ' ' + wt_pos[i:]
             for key in sample_set.keys():
-                if sample_set[key]["ref_line"][i] == '-':
+                if sample_set[key]["match_line"][i] == '+':
                     if is_html:
                         sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
-                                                       sample_set[key]["read_line"][i].lower() + \
+                                                       DICT_ERR_NT[sample_set[key]["read_line"][i]] + \
                                                        sample_set[key]["read_line"][i + 1:]
                     continue
                 sample_set[key]["ref_line"] = sample_set[key]["ref_line"][:i] + ' ' + sample_set[key]["ref_line"][
@@ -210,9 +210,16 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
                 if sample_set[key]["match_line"][i] == '|':
                     continue
                 sample_set[key]["read_line"] = sample_set[key]["read_line"][:i] + \
-                                               sample_set[key]["read_line"][i].lower() + \
+                                               DICT_ERR_NT[sample_set[key]["read_line"][i]] + \
                                                sample_set[key]["read_line"][i + 1:]
         i += 1
+
+    for key in sample_set.keys():
+        for nt_key in DICT_ERR_NT_REV:
+            if is_html:
+                sample_set[key]['read_line'].replace(nt_key, f"<div class=point>{DICT_ERR_NT_REV[nt_key]}</div>")
+            else:
+                sample_set[key]['read_line'].replace(nt_key, DICT_ERR_NT_REV[nt_key].lower())
 
     text += f"\n" \
             f"{wt_pos}\n" \
@@ -224,12 +231,17 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
                 f"{self.count_map[key] / (self.get_len(with_err=False) + Z):.3f})\n"
 
     text += f"\n"
-    text += f"{'-' * len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
-            f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
+    if is_html:
+        text += f"<div class=point>{'-' * len(wt_seq)}</div> : err     " \
+                f"({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
+                f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
+    else:
+        text += f"{'-' * len(wt_seq)} : err     ({self.count_map['err']:>5}/{self.get_len(with_err=True)}, " \
+                f"{self.count_map['err'] / (self.get_len(with_err=True) + Z):.3f})\n"
     return text
 
 
-def get_simple_example_set(line_set: Line_Set):
+def get_simple_example_line_set(line_set: Line_Set):
     std_pos = line_set.std_pos
     rna_pos = line_set.rna_pos
 

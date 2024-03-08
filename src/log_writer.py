@@ -59,7 +59,7 @@ def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_fo
                    f"\n"
                    f"\n")
 
-    file_log.write(indel_counter.get_simple_example_text())
+    file_log.write(indel_counter.get_abstract_text())
     file_log.write("\n"
                    "\n"
                    "----------------------\n")
@@ -101,7 +101,7 @@ def write_main_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype
         file_log.write(f"<{indel_counter_list[0].file_name}>\n"
                        f"\n")
         for indel_counter in indel_counter_list:
-            file_log.write(indel_counter.get_simple_example_text())
+            file_log.write(indel_counter.get_abstract_text())
             file_log.write("\n"
                            "\n"
                            "\n")
@@ -127,6 +127,8 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
                    "        .important {color: green; font-weight: bold; display: inline;}\n"
                    "        .not_important {color: gray; font-weight: bold; display: inline;}\n"
                    "        .point {color: red; font-weight: bold; display: inline;}\n"
+                   "        .file {margin: 5%}\n"
+                   "        .heading_info {margin: 5%}\n"
                    "\n"
                    "    </style>\n"
                    "</head>\n"
@@ -147,22 +149,15 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
 
     for indel_counter_list in indel_counter_list_list:
         file_log.write(
-            f"    <br><br><div class=file_{indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
+            f"<div class=file id={indel_counter_list[0].file_name}><h2 class=file_name>[{indel_counter_list[0].file_name}]</h2>\n")
         for indel_counter in indel_counter_list:
-            example_text = indel_counter.get_simple_example_text(is_html=True).replace("\n", "<br>").replace('  ',
-                                                                                                             '&nbsp;&nbsp;')
-            file_log.write(f"<div class=ref_{indel_counter.ref_name}>")
-            change_next_to = "ATGCatgc- <>&;"
-            change_this = 'atgc-'
-            for a in change_next_to:
-                for b in change_next_to:
-                    for c in change_this:
-                        example_text = example_text.replace(f"{a}{c}{b}", f"{a}<div class=point>{c.upper()}</div>{b}")
+            example_text = indel_counter.get_abstract_text(is_html=True).replace("\n", "<br>").replace('  ', '&nbsp;&nbsp;')
+            file_log.write(f"<div class=ref id={indel_counter.ref_name}>")
 
             file_log.write(example_text)
             file_log.write("\n"
                            "<br></div>\n")
-        file_log.write("</div>")
+        file_log.write("</div>\n")
 
     file_log.write("</body>\n"
                    "</html>")

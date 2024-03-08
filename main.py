@@ -189,8 +189,8 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
 
     # to show that the program is running by someone else in the folder:
     # this will make a no_name file of 'using' the folder.
-    file = open(os.path.join(DATA_ADDRESS, ".program_is_running_here"), 'w')
-    file.close()
+    # file = open(os.path.join(DATA_ADDRESS, ".program_is_running_here"), 'w')
+    # file.close()
 
     for file_no, file_name in enumerate(data_file_list):
         '''
@@ -285,6 +285,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
                 if indel_counter.ref_name == line_set.ref_name:
                     line_set.set_indel_same_type_count(indel_counter.count_map)
 
+        #
         # add the file result to the total result
         all_indel_counter_list_list.append(indel_counter_list)
 
@@ -343,7 +344,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     print(f"Work Completed! (total time: {datetime.datetime.now() - start_time})")
 
     # # delete the file of 'program is running here'
-    os.remove(os.path.join(DATA_ADDRESS, ".program_is_running_here"))
+    # os.remove(os.path.join(DATA_ADDRESS, ".program_is_running_here"))
 
     #
     if glv.OPEN_XLSX_AUTO:
