@@ -16,8 +16,6 @@ from src.log_writer import write_main_log, write_main_html_log, write_sub_log, w
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
-USED_DATA_ADDRESS = "./data/used/"
-GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 
@@ -105,6 +103,56 @@ def key_for_sorting_err(line_set: Line_Set):
     return 0
 
 
+def test_all_input_files():
+
+    is_data_exist = False
+    is_guide_rna_exist = False
+    is_reference_exist = False
+
+    if not os.path.exists(DATA_ADDRESS):
+        os.makedirs(DATA_ADDRESS)
+    if not os.path.exists(REF_SET_ADDRESS):
+        os.makedirs(REF_SET_ADDRESS)
+
+    if len(get_file_data_file_list()) > 0:
+        is_data_exist = True
+
+    if os.path.exists(GUIDE_RNA_SET_ADDRESS):
+        try:
+            SeqIO.parse(GUIDE_RNA_SET_ADDRESS, 'fasta')
+            is_guide_rna_exist = True
+        except (TypeError, ValueError):
+            pass
+    else:
+        with open(GUIDE_RNA_SET_ADDRESS, 'w') as file:
+            file.write(">Guide_RNA_SPACER\n"
+                       "ATTATAGGAAGAAAGGGGAA # insert the spacer sequence of your guide RNA without PAM sequence here\n")
+
+    if os.path.exists(REF_SET_ADDRESS):
+        try:
+            SeqIO.parse(REF_SET_ADDRESS, 'fasta')
+            is_reference_exist = True
+        except (TypeError, ValueError):
+            pass
+    else:
+        with open(REF_SET_ADDRESS, 'w') as file:
+            file.write(">Rererence_Sequence_around_sequencing_part\n"
+                       "ATTATAGGAAGAAAGGGGAA # insert the reference sequence here "
+                       "(length > 300 nt, margin > 50 nt is recommended)\n")
+
+    if not is_data_exist:
+        print("No Data(NGS result files: fastq, fastq.gz) found in the ./data folder")
+    if not is_reference_exist:
+        print("Something is wrong with ./ref/reference_seq_set.fasta file!")
+    if not is_guide_rna_exist:
+        print("Something is wrong with ./ref/guide_RNA_set.fasta file!")
+    if is_guide_rna_exist and is_data_exist and is_reference_exist:
+        return True
+    print("Please check the files and try again!")
+    print("Terminating...")
+    return False
+
+
 @click.command()
 @click.option('-x', '--read_ignore', default=['R2', 'Undetermined'], multiple=True,
               help=glv.EXPLANATION_MAP['read_ignore'])
@@ -160,6 +208,10 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
     glv.TASK_TITLE = task_title
     glv.OPEN_XLSX_AUTO = open_xlsx_auto
     glv.DEBUG = debug
+
+    is_good_to_go = test_all_input_files()
+    if not is_good_to_go:
+        return -1
 
     # Get sorted file address list from a folder, list[str]
     data_file_list = get_file_data_file_list()
