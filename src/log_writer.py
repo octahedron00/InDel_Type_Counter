@@ -16,7 +16,7 @@ import src.globals as glv
 Z = 0.000000001
 
 
-def get_main_log_name(extension: str, is_folder=False):
+def get_main_log_name(extension: str, is_folder=False, is_sub=False):
     valid_task_title = "".join([c for c in glv.TASK_TITLE if c not in "\/:*?<>| -"])
 
     if not os.path.exists(f"./Result_{valid_task_title}/"):
@@ -26,7 +26,9 @@ def get_main_log_name(extension: str, is_folder=False):
 
     if is_folder:
         return f"./Result_{valid_task_title}/"
-    return f"./Result_{valid_task_title}/{valid_task_title}_count_result.{extension}"
+    if is_sub:
+        return f"./Result_{valid_task_title}/log/{valid_task_title}_result.{extension}"
+    return f"./Result_{valid_task_title}/{valid_task_title}_result.{extension}"
 
 
 def get_sub_log_address(file_name: str, ref_name: str, extension: str):
@@ -83,7 +85,7 @@ def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_fo
 
 
 def write_main_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], total_length: int):
-    main_log_name = get_main_log_name("txt")
+    main_log_name = get_main_log_name("txt", is_sub=True)
     file_log = open(main_log_name, "w")
 
     file_log.write(f"# <CNS-Genotyper {glv.VERSION} Main Log>\n"
@@ -324,7 +326,7 @@ def _showing_selected_area_to_text(guide_rna_seq: str):
 
 
 def write_raw_data_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype]], debug_data: Dict[str, Dict]):
-    debug_log_name = get_main_log_name("raw")
+    debug_log_name = get_main_log_name("raw", is_sub=True)
 
     with open(debug_log_name, 'w') as file_log:
         if glv.DEBUG:
