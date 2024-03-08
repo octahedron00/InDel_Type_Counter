@@ -16,6 +16,7 @@ from src.log_writer import write_main_log, write_main_html_log, write_sub_log, w
 import src.globals as glv
 
 DATA_ADDRESS = "./data/"
+REF_ADDRESS = "./ref/"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 
@@ -111,8 +112,8 @@ def test_all_input_files():
 
     if not os.path.exists(DATA_ADDRESS):
         os.makedirs(DATA_ADDRESS)
-    if not os.path.exists(REF_SET_ADDRESS):
-        os.makedirs(REF_SET_ADDRESS)
+    if not os.path.exists(REF_ADDRESS):
+        os.makedirs(REF_ADDRESS)
 
     if len(get_file_data_file_list()) > 0:
         is_data_exist = True
@@ -121,7 +122,7 @@ def test_all_input_files():
         try:
             SeqIO.parse(GUIDE_RNA_SET_ADDRESS, 'fasta')
             is_guide_rna_exist = True
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, PermissionError):
             pass
     else:
         with open(GUIDE_RNA_SET_ADDRESS, 'w') as file:
@@ -132,7 +133,7 @@ def test_all_input_files():
         try:
             SeqIO.parse(REF_SET_ADDRESS, 'fasta')
             is_reference_exist = True
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, PermissionError):
             pass
     else:
         with open(REF_SET_ADDRESS, 'w') as file:
