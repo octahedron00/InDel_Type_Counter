@@ -47,7 +47,7 @@ def write_sub_log(line_set_list: List[Line_Set], indel_counter: InDel_Counter_fo
     file_log = open(get_sub_log_address(file_name, indel_counter.ref_name, 'txt'), 'w')
 
     file_log.write(f""
-                   f"# <InDel_Type_Counter {glv.VERSION} Side Log for {file_name}>\n"
+                   f"# <CNS-Genotyper {glv.VERSION} Side Log for {file_name}>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
                    f"# \n"
                    f"# Task Title: {glv.TASK_TITLE}\n"
@@ -86,7 +86,7 @@ def write_main_log(indel_counter_list_list: List[List[InDel_Counter_for_Genotype
     main_log_name = get_main_log_name("txt")
     file_log = open(main_log_name, "w")
 
-    file_log.write(f"# <InDel_Type_Counter {glv.VERSION} Main Log>\n"
+    file_log.write(f"# <CNS-Genotyper {glv.VERSION} Main Log>\n"
                    f"# Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})\n"
                    f"# \n"
                    f"# Task Title: {glv.TASK_TITLE}\n"
@@ -135,7 +135,7 @@ def write_main_html_log(indel_counter_list_list: List[List[InDel_Counter_for_Gen
 
     html_global_variables = glv.get_text_of_global_variables().replace('\n', '<br>')
 
-    file_log.write(f"    <div class=heading_info><h2> [InDel_Type_Counter {glv.VERSION} Main Log] </h2>\n"
+    file_log.write(f"    <div class=heading_info><h2> [CNS-Genotyper {glv.VERSION} Main Log] </h2>\n"
                    f"    <h2> Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()}) </h2>\n"
                    f"    <h2> Task Title: {glv.TASK_TITLE}</h2>\n"
                    f"    <br>\n"
@@ -175,7 +175,7 @@ def write_main_csv_log(indel_counter_list_list: List[List[InDel_Counter_for_Geno
     file_csv = open(csv_log_name, 'w', newline="")
     file_csv_writer = csv.writer(file_csv)
 
-    file_csv_writer.writerow([f"<InDel_Type_Counter {glv.VERSION} Main Log>"])
+    file_csv_writer.writerow([f"<CNS-Genotyper {glv.VERSION} Main Log>"])
     file_csv_writer.writerow(
         [f"Log at {datetime.datetime.now()} (UTC {datetime.datetime.now() - datetime.datetime.utcnow()})"])
     file_csv_writer.writerow(["Task Title", glv.TASK_TITLE])

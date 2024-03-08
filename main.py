@@ -21,7 +21,7 @@ GUIDE_RNA_ADDRESS = "./ref/guide_RNA.txt"
 GUIDE_RNA_SET_ADDRESS = "./ref/guide_RNA_set.fasta"
 REF_SET_ADDRESS = "./ref/reference_seq_set.fasta"
 
-# with spans, 3 second for 1000 lines: 20000 for a minute, 600000: 30 minutes
+# with spans, 3 second for 1000 lines: 20000 for a minute, 1,000,000 ~ 1,500,000 for an hour
 # > total 800 nt of ref, 150 nt for a line: 40,000,000 for a second.
 
 
@@ -351,7 +351,7 @@ def main(read_ignore, err_ratio_max, err_padding_for_seq, cut_pos_from_pam, cut_
 
 
 if __name__ == '__main__':
-    print("InDel Type Counter ver. "+glv.VERSION)
+    print("CNS-Genotyper ver. "+glv.VERSION)
     print()
     main()
 
