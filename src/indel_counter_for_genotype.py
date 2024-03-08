@@ -217,9 +217,11 @@ def get_simple_example_lines(sorted_best_example_tuple: list, self: InDel_Counte
     for key in sample_set.keys():
         for nt_key in DICT_ERR_NT_REV:
             if is_html:
-                sample_set[key]['read_line'].replace(nt_key, f"<div class=point>{DICT_ERR_NT_REV[nt_key]}</div>")
+                sample_set[key]['read_line'] = \
+                    sample_set[key]['read_line'].replace(nt_key, f"<div class=point>{DICT_ERR_NT_REV[nt_key]}</div>")
             else:
-                sample_set[key]['read_line'].replace(nt_key, DICT_ERR_NT_REV[nt_key].lower())
+                sample_set[key]['read_line'] = \
+                    sample_set[key]['read_line'].replace(nt_key, DICT_ERR_NT_REV[nt_key].lower())
 
     text += f"\n" \
             f"{wt_pos}\n" \
